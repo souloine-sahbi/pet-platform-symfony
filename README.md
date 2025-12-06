@@ -1,0 +1,259 @@
+﻿# 🐾 Pet Platform - Plateforme d'Adoption et Échange d'Animaux
+
+## 📝 Description
+Plateforme humanitaire pour faciliter l'adoption, l'échange et la garde d'animaux de compagnie.
+
+## 👥 Équipe
+- **Étudiant 1** : Utilisateurs & Évaluations
+- **Étudiant 2** : Animaux & Annonces
+- **Étudiant 3** : Demandes, Sessions & Messages
+
+## 🛠️ Technologies
+- Symfony 7.2
+- PHP 8.2+
+- MySQL 8.0
+- Doctrine ORM
+- Twig
+
+## 📦 Installation
+
+### Prérequis
+- PHP 8.2+
+- Composer
+- MySQL (XAMPP)
+
+### Étapes
+1. Cloner le projet
+```bash
+git clone [URL_DU_DEPOT]
+cd pet-platform-symfony
+```
+
+2. Installer les dépendances
+```bash
+composer install
+```
+
+3. Configurer la base de données
+```bash
+# Copier .env en .env.local et modifier DATABASE_URL
+cp .env .env.local
+```
+
+4. Créer la base de données
+```bash
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate
+```
+
+5. Démarrer le serveur
+```bash
+symfony server:start
+# OU
+php -S localhost:8000 -t public/
+```
+
+## 📂 Structure des branches
+- `main` : branche principale
+- `etudiant1-users-evaluations`
+- `etudiant2-animals-annonces`
+- `etudiant3-demandes-sessions`
+
+## 🚀 Workflow Git
+1. Créer/basculer sur votre branche
+2. Développer vos fonctionnalités
+3. Commit réguliers
+4. Push sur votre branche
+
+5. Pull Request vers main quand terminé
+---
+
+## 📘 Cahier des Charges Simplifié
+
+Cette section résume les fonctionnalités, les acteurs, et la structure de la base de données.
+
+### 👤 1. Acteurs & Cas d'Utilisation
+
+#### Utilisateur (générique)
+- Se connecter
+- Se déconnecter  
+- Mettre à jour son profil
+
+#### Client
+Un client représente un membre de la communauté qui peut gérer un animal ou interagir avec d'autres utilisateurs.
+
+**Cas d'utilisation :**
+- Créer une annonce
+- Modifier ou supprimer une annonce
+- Ajouter un animal
+- Gérer ses animaux (modifier / supprimer)
+- Envoyer une demande d'adoption ou de garde
+- Accepter ou refuser une demande reçue
+- Envoyer et recevoir des messages
+- Évaluer un autre utilisateur
+
+#### Admin
+L'administrateur supervise la plateforme.
+
+**Cas d'utilisation :**
+- Valider ou rejeter des annonces
+- Supprimer une annonce non conforme
+- Bloquer un utilisateur
+- Consulter des statistiques globales
+
+---
+
+### 🐶 2. Fonctionnalités Principales
+
+#### Gestion des animaux
+- Ajouter un animal
+- Associer un animal à plusieurs annonces (à des dates différentes)
+- Un animal peut réapparaître dans plusieurs annonces au fil du temps
+
+#### Gestion des annonces
+- Publier une annonce
+- Modifier une annonce
+- Désactiver une annonce
+- Associer plusieurs animaux à une annonce
+- Les associations annonce–animal possèdent des dates de début et fin
+
+#### Demandes
+- Un client peut envoyer une demande à l'auteur de l'annonce
+- Une demande peut être acceptée ou refusée
+- Une session de garde peut être créée après acceptation
+
+#### Sessions (garde / échange)
+- Démarrer une session
+- Terminer une session
+- Statut : active / terminée / annulée
+
+#### Messages
+- Envoi de message entre deux utilisateurs
+- Un message appartient à un expéditeur et un destinataire
+
+#### Évaluations
+- Un utilisateur peut évaluer un autre utilisateur
+- Note + commentaire + date
+
+---
+
+### 🗄️ 3. Structure de la Base de Données (Classes → Tables)
+
+#### Table : Utilisateur
+**Champs :**
+- id
+- nom
+- prenom
+- email
+- motDePasse
+- photoProfil
+- adresse
+- telephone
+- role
+
+**Relations :**
+- 1 utilisateur → 0..* animaux
+- 1 utilisateur → 0..* annonces
+- 1 utilisateur → 0..* demandes envoyées
+- 1 utilisateur → 0..* demandes reçues
+- 1 utilisateur → 0..* messages envoyés
+- 1 utilisateur → 0..* messages reçus
+- 1 utilisateur → 0..* évaluations envoyées
+- 1 utilisateur → 0..* évaluations reçues
+
+#### Table : Animal
+**Champs :**
+- id
+- nom
+- race
+- age
+- sexe
+- photo
+- description
+- proprietaire_id
+
+**Relations :**
+- Many-to-One : un utilisateur possède plusieurs animaux
+- Many-to-Many via AnnonceAnimal : un animal peut apparaître dans plusieurs annonces
+
+#### Table : Annonce
+**Champs :**
+- id
+- titre
+- description
+- type (adoption, échange, petcare)
+- datePublication
+- statut
+- auteur_id
+
+**Relations :**
+- Many-to-One : un client crée plusieurs annonces
+- Many-to-Many via AnnonceAnimal : une annonce peut contenir plusieurs animaux
+- One-to-Many : une annonce peut recevoir plusieurs demandes
+
+#### Table : AnnonceAnimal (table pivot)
+**Champs :**
+- id
+- animal_id
+- annonce_id
+- dateDebut
+- dateFin
+
+**Relations :**
+- Many-to-One → Animal
+- Many-to-One → Annonce
+
+#### Table : Demande
+**Champs :**
+- id
+- dateEnvoi
+- statut (en_attente, acceptee, refusee)
+- message
+- demandeur_id
+- destinataire_id
+- annonce_id
+
+**Relations :**
+- Many-to-One → Utilisateur (demandeur)
+- Many-to-One → Utilisateur (destinataire)
+- Many-to-One → Annonce
+- One-to-One → Session (optionnel)
+
+#### Table : Session
+**Champs :**
+- id
+- dateDebut
+- dateFin
+- statut (en_cours, terminee, annulee)
+- description
+- demande_id
+
+**Relations :**
+- One-to-One → Demande
+
+#### Table : Message
+**Champs :**
+- id
+- contenu
+- dateEnvoi
+- expediteur_id
+- destinataire_id
+
+**Relations :**
+- Many-to-One → Utilisateur (expediteur)
+- Many-to-One → Utilisateur (destinataire)
+
+#### Table : Evaluation
+**Champs :**
+- id
+- note (1-5)
+- commentaire
+- dateEvaluation
+- evaluateur_id
+- evalue_id
+
+**Relations :**
+- Many-to-One → Utilisateur (evaluateur)
+- Many-to-One → Utilisateur (evalué)
+
+---

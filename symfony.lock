@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "doctrine/annotations": {
         "version": "2.0",
         "recipe": {
@@ -8,6 +9,8 @@
             "ref": "64d8583af5ea57b7afa4aba4b159907f3a148b05"
         }
     },
+=======
+>>>>>>> origin/etudiant3-demandes-sessions
     "doctrine/deprecations": {
         "version": "1.1",
         "recipe": {
@@ -60,7 +63,11 @@
         ]
     },
     "symfony/asset-mapper": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -75,7 +82,11 @@
         ]
     },
     "symfony/console": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -87,7 +98,11 @@
         ]
     },
     "symfony/debug-bundle": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -112,7 +127,11 @@
         ]
     },
     "symfony/form": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -124,12 +143,21 @@
         ]
     },
     "symfony/framework-bundle": {
+<<<<<<< HEAD
         "version": "7.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "7.4",
             "ref": "09f6e081c763a206802674ce0cb34a022f0ffc6d"
+=======
+        "version": "7.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.2",
+            "ref": "87bcf6f7c55201f345d8895deda46d2adbdbaa89"
+>>>>>>> origin/etudiant3-demandes-sessions
         },
         "files": [
             "./config/packages/cache.yaml",
@@ -139,12 +167,20 @@
             "./config/services.yaml",
             "./public/index.php",
             "./src/Controller/.gitignore",
+<<<<<<< HEAD
             "./src/Kernel.php",
             "./.editorconfig"
         ]
     },
     "symfony/mailer": {
         "version": "7.4",
+=======
+            "./src/Kernel.php"
+        ]
+    },
+    "symfony/mailer": {
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -156,7 +192,11 @@
         ]
     },
     "symfony/maker-bundle": {
+<<<<<<< HEAD
         "version": "1.65",
+=======
+        "version": "1.64",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -165,7 +205,11 @@
         }
     },
     "symfony/messenger": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -177,7 +221,11 @@
         ]
     },
     "symfony/monolog-bundle": {
+<<<<<<< HEAD
         "version": "4.0",
+=======
+        "version": "3.10",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -189,7 +237,11 @@
         ]
     },
     "symfony/notifier": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -200,6 +252,7 @@
             "./config/packages/notifier.yaml"
         ]
     },
+<<<<<<< HEAD
     "symfony/property-info": {
         "version": "7.4",
         "recipe": {
@@ -219,6 +272,15 @@
             "branch": "main",
             "version": "7.4",
             "ref": "bc94c4fd86f393f3ab3947c18b830ea343e51ded"
+=======
+    "symfony/routing": {
+        "version": "7.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.0",
+            "ref": "ab1e60e2afd5c6f4a6795908f646e235f2564eb2"
+>>>>>>> origin/etudiant3-demandes-sessions
         },
         "files": [
             "./config/packages/routing.yaml",
@@ -226,12 +288,21 @@
         ]
     },
     "symfony/security-bundle": {
+<<<<<<< HEAD
         "version": "7.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "7.4",
             "ref": "c42fee7802181cdd50f61b8622715829f5d2335c"
+=======
+        "version": "7.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "6.4",
+            "ref": "2ae08430db28c8eb4476605894296c82a642028f"
+>>>>>>> origin/etudiant3-demandes-sessions
         },
         "files": [
             "./config/packages/security.yaml",
@@ -254,7 +325,11 @@
         ]
     },
     "symfony/translation": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -267,7 +342,11 @@
         ]
     },
     "symfony/twig-bundle": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -292,7 +371,11 @@
         ]
     },
     "symfony/validator": {
+<<<<<<< HEAD
         "version": "7.4",
+=======
+        "version": "7.2",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -304,12 +387,21 @@
         ]
     },
     "symfony/web-profiler-bundle": {
+<<<<<<< HEAD
         "version": "7.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "7.3",
             "ref": "a363460c1b0b4a4d0242f2ce1a843ca0f6ac9026"
+=======
+        "version": "7.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "6.1",
+            "ref": "8b51135b84f4266e3b4c8a6dc23c9d1e32e543b7"
+>>>>>>> origin/etudiant3-demandes-sessions
         },
         "files": [
             "./config/packages/web_profiler.yaml",
@@ -317,7 +409,11 @@
         ]
     },
     "symfony/webapp-pack": {
+<<<<<<< HEAD
         "version": "1.4",
+=======
+        "version": "1.3",
+>>>>>>> origin/etudiant3-demandes-sessions
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
