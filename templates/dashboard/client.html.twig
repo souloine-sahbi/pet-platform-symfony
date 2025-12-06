@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Client - PetNexus{% endblock %}
+
+{% block body %}
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="{{ path('client_dashboard') }}" class="brand-link">
+            <i class="fas fa-paw brand-image"></i>
+            <span class="brand-text font-weight-light">PetNexus</span>
+        </a>
+
+        <div class="sidebar">
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <i class="fas fa-user-circle fa-2x text-white"></i>
+                </div>
+                <div class="info">
+                    <a href="#" class="d-block">{{ app.user.nomComplet }}</a>
+                </div>
+            </div>
+
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="{{ path('client_dashboard') }}" class="nav-link active">
+                            <i class="nav-icon fas fa-home"></i>
+                            <p>Accueil</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-paw"></i>
+                            <p>Mes Animaux</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-bullhorn"></i>
+                            <p>Mes Annonces</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-envelope"></i>
+                            <p>Messages</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('evaluation_index') }}" class="nav-link">
+                            <i class="nav-icon fas fa-star"></i>
+                            <p>Mes Évaluations</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('profil_show') }}" class="nav-link">
+                            <i class="nav-icon fas fa-user-cog"></i>
+                            <p>Mon Profil</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Bienvenue, {{ app.user.prenom }} !</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                <!-- Quick Stats -->
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>0</h3>
+                                <p>Mes Animaux</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-paw"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>0</h3>
+                                <p>Mes Annonces</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>0</h3>
+                                <p>Demandes Reçues</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3>0</h3>
+                                <p>Nouveaux Messages</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <a href="#" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Card -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    Bienvenue sur PetNexus !
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <h5>Bonjour {{ app.user.prenom }},</h5>
+                                <p>Bienvenue sur votre espace personnel PetNexus !</p>
+
+                                <div class="alert alert-info">
+                                    <h5><i class="icon fas fa-lightbulb"></i> Pour commencer :</h5>
+                                    <ol>
+                                        <li>Ajoutez vos animaux de compagnie</li>
+                                        <li>Créez des annonces (adoption, échange, petcare)</li>
+                                        <li>Parcourez les annonces disponibles</li>
+                                        <li>Envoyez des demandes pour les animaux qui vous intéressent</li>
+                                        <li>Communiquez avec d'autres propriétaires</li>
+                                    </ol>
+                                </div>
+
+                                <p><strong>Informations de votre profil :</strong></p>
+                                <ul>
+                                    <li><strong>Email :</strong> {{ app.user.email }}</li>
+                                    <li><strong>Téléphone :</strong> {{ app.user.telephone ?? 'Non renseigné' }}</li>
+                                    <li><strong>Adresse :</strong> {{ app.user.adresse ?? 'Non renseignée' }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Actions Rapides</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="#" class="btn btn-primary btn-block mb-2">
+                                        <i class="fas fa-plus-circle"></i> Ajouter un animal
+                                    </a>
+                                    <a href="#" class="btn btn-success btn-block mb-2">
+                                        <i class="fas fa-bullhorn"></i> Créer une annonce
+                                    </a>
+                                    <a href="#" class="btn btn-info btn-block mb-2">
+                                        <i class="fas fa-search"></i> Parcourir les annonces
+                                    </a>
+                                    <a href="#" class="btn btn-warning btn-block">
+                                        <i class="fas fa-user-edit"></i> Modifier mon profil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title">Aide</h3>
+                            </div>
+                            <div class="card-body">
+                                <p><i class="fas fa-question-circle"></i> Besoin d'aide ?</p>
+                                <p class="text-sm">Consultez notre guide utilisateur ou contactez le support.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2024 <a href="#">PetNexus</a>.</strong>
+        Tous droits réservés.
+        <div class="float-right d-none d-sm-inline-block">
+            <b>Version</b> 1.0.0
+        </div>
+    </footer>
+{% endblock %}
