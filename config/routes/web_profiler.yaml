@@ -1,8 +1,16 @@
 when@dev:
     web_profiler_wdt:
+<<<<<<< HEAD
+        resource: '@WebProfilerBundle/Resources/config/routing/wdt.php'
+        prefix: /_wdt
+
+    web_profiler_profiler:
+        resource: '@WebProfilerBundle/Resources/config/routing/profiler.php'
+=======
         resource: '@WebProfilerBundle/Resources/config/routing/wdt.xml'
         prefix: /_wdt
 
     web_profiler_profiler:
         resource: '@WebProfilerBundle/Resources/config/routing/profiler.xml'
+>>>>>>> origin/etudiant3-demandes-sessions
         prefix: /_profiler

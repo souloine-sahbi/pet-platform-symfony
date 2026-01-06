@@ -8,4 +8,10 @@ when@dev:
 
 when@test:
     framework:
+<<<<<<< HEAD
+        profiler:
+            collect: false
+            collect_serializer_data: true
+=======
         profiler: { collect: false }
+>>>>>>> origin/etudiant3-demandes-sessions

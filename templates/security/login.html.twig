@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - PetNexus{% endblock %}
+
+{% block body_class %}login-page{% endblock %}
+
+{% block body %}
+    <div class="login-box">
+        <div class="card card-outline card-primary">
+            <div class="card-header text-center">
+                <a href="{{ path('app_login') }}" class="h1"><b>Pet</b>Nexus</a>
+            </div>
+            <div class="card-body">
+                <p class="login-box-msg">Connectez-vous pour commencer votre session</p>
+
+                {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <form method="post">
+                    <div class="input-group mb-3">
+                        <input type="email"
+                               name="_username"
+                               value="{{ last_username }}"
+                               class="form-control"
+                               placeholder="Email"
+                               required
+                               autofocus>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password"
+                               name="_password"
+                               class="form-control"
+                               placeholder="Mot de passe"
+                               required>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="icheck-primary">
+                                <input type="checkbox" id="remember_me" name="_remember_me">
+                                <label for="remember_me">
+                                    Se souvenir de moi
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-primary btn-block">Connexion</button>
+                        </div>
+                    </div>
+                </form>
+
+                <p class="mb-0 mt-3">
+                    <a href="{{ path('app_register') }}" class="text-center">Créer un nouveau compte</a>
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

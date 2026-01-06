@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block body %}
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="{{ path('client_dashboard') }}" class="brand-link">
+            <i class="fas fa-paw brand-image"></i>
+            <span class="brand-text font-weight-light">PetNexus</span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column">
+                    <li class="nav-item">
+                        <a href="{{ path('client_dashboard') }}" class="nav-link">
+                            <i class="nav-icon fas fa-home"></i>
+                            <p>Accueil</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('profil_show') }}" class="nav-link active">
+                            <i class="nav-icon fas fa-user-cog"></i>
+                            <p>Mon Profil</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <h1 class="m-0">Modifier mon profil</h1>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+                {% endfor %}
+
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Informations personnelles</h3>
+                            </div>
+                            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                            <div class="card-body">
+                                {% if user.photoProfil %}
+                                    <div class="form-group text-center">
+                                        <img src="{{ asset('uploads/photos/' ~ user.photoProfil) }}"
+                                             alt="Photo actuelle"
+                                             class="img-circle elevation-2"
+                                             style="width: 150px; height: 150px; object-fit: cover;">
+                                        <p class="text-muted mt-2">Photo actuelle</p>
+                                    </div>
+                                {% endif %}
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form_row(form.nom) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.prenom) }}
+                                    </div>
+                                </div>
+
+                                {{ form_row(form.telephone) }}
+                                {{ form_row(form.adresse) }}
+
+                                <div class="form-group">
+                                    {{ form_label(form.photoFile) }}
+                                    {{ form_widget(form.photoFile) }}
+                                    {{ form_errors(form.photoFile) }}
+                                    <small class="form-text text-muted">
+                                        Formats acceptés : JPG, PNG (Max : 2 Mo)
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Enregistrer les modifications
+                                </button>
+                                <a href="{{ path('profil_show') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Annuler
+                                </a>
+                            </div>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2024 PetNexus.</strong> Tous droits réservés.
+    </footer>
+{% endblock %}
