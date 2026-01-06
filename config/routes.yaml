@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # yaml-language-server: $schema=../vendor/symfony/routing/Loader/schema/routing.schema.json
 
 # This file is the entry point to configure the routes of your app.
@@ -8,8 +7,6 @@
 # To list all registered routes, run the following command:
 #   bin/console debug:router
 
-=======
->>>>>>> origin/etudiant3-demandes-sessions
 controllers:
     resource:
         path: ../src/Controller/
