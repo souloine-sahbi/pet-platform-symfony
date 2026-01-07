@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Annonces{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">
+            <i class="fas fa-bullhorn"></i> Mes Annonces
+            <a href="{{ path('app_annonce_new') }}" class="btn btn-primary float-end">
+                <i class="fas fa-plus"></i> Créer une annonce
+            </a>
+        </h1>
+
+        {% if annonces|length > 0 %}
+            <div class="row">
+                {% for annonce in annonces %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-{{ annonce.statut == 'active' ? 'success' : 'secondary' }} text-white">
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge bg-light text-dark">{{ annonce.type|capitalize }}</span>
+                                    <span class="badge bg-{{ annonce.statut == 'active' ? 'warning' : 'secondary' }}">
+                            {{ annonce.statut == 'active' ? 'Active' : 'Clôturée' }}
+                        </span>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">{{ annonce.titre }}</h5>
+                                <p class="card-text">{{ annonce.description|slice(0, 150) }}...</p>
+
+                                {% if annonce.animals|length > 0 %}
+                                    <div class="mt-3">
+                                        <h6>Animaux concernés :</h6>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for animal in annonce.animals %}
+                                                <span class="badge bg-info">
+                                <i class="fas fa-paw"></i> {{ animal.nom }}
+                            </span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        Publiée le {{ annonce.datePublication|date('d/m/Y') }}
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ path('app_annonce_show', {'id': annonce.id}) }}"
+                                       class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                    <a href="{{ path('app_annonce_edit', {'id': annonce.id}) }}"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+
+                                    <form method="post" action="{{ path('app_annonce_delete', {'id': annonce.id}) }}"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ annonce.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Vous n'avez pas encore créé d'annonces.
+                <a href="{{ path('app_annonce_new') }}" class="alert-link">Créez votre première annonce !</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if annonces|length > 0 %}
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-chart-bar"></i> Statistiques
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Total annonces :</strong> {{ annonces|length }}</p>
+                            <p><strong>Annonces actives :</strong>
+                                {{ annonces|filter(a => a.statut == 'active')|length }}
+                            </p>
+                            <p><strong>Annonces clôturées :</strong>
+                                {{ annonces|filter(a => a.statut == 'cloturee')|length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

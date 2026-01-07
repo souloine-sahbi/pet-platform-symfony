@@ -1,38 +1,199 @@
-{% extends 'base.html.twig' %}
+{% extends app.user ? (app.user.roles[0] == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig') : 'base.html.twig' %}
 
-{% block title %}Session{% endblock %}
+{% block title %}Message #{{ message.id }} - PetNexus{% endblock %}
 
 {% block body %}
-    <h1>Session</h1>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Détails du Message</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path(app.user.roles[0] == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_message_index') }}">Messages</a></li>
+                            <li class="breadcrumb-item active">Détails</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ session.id }}</td>
-            </tr>
-            <tr>
-                <th>DateDebut</th>
-                <td>{{ session.dateDebut ? session.dateDebut|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>DateFin</th>
-                <td>{{ session.dateFin ? session.dateFin|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Statut</th>
-                <td>{{ session.statut }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ session.description }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-envelope"></i>
+                                    Message #{{ message.id }}
+                                    {% if message.expediteur.id == app.user.id %}
+                                        <span class="badge badge-primary ml-2">Envoyé</span>
+                                    {% else %}
+                                        <span class="badge badge-success ml-2">Reçu</span>
+                                        {% if not message.lu or message.lu == false %}
+                                            <span class="badge badge-warning ml-1">Non lu</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </h3>
+                            </div>
 
-    <a href="{{ path('app_session_index') }}">back to list</a>
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">
+                                                    <i class="fas fa-paper-plane"></i> Expéditeur
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-1">
+                                                    <strong>Nom:</strong>
+                                                    {{ message.expediteur.prenom }} {{ message.expediteur.nom }}
+                                                </p>
+                                                <p class="mb-1">
+                                                    <strong>Email:</strong>
+                                                    {{ message.expediteur.email }}
+                                                </p>
+                                                <p class="mb-0">
+                                                    <strong>Téléphone:</strong>
+                                                    {{ message.expediteur.telephone ?? 'Non renseigné' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
 
-    <a href="{{ path('app_session_edit', {'id': session.id}) }}">edit</a>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">
+                                                    <i class="fas fa-user-check"></i> Destinataire
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-1">
+                                                    <strong>Nom:</strong>
+                                                    {{ message.destinataire.prenom }} {{ message.destinataire.nom }}
+                                                </p>
+                                                <p class="mb-1">
+                                                    <strong>Email:</strong>
+                                                    {{ message.destinataire.email }}
+                                                </p>
+                                                <p class="mb-0">
+                                                    <strong>Téléphone:</strong>
+                                                    {{ message.destinataire.telephone ?? 'Non renseigné' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-    {{ include('session/_delete_form.html.twig') }}
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="card-title mb-0">
+                                                    <i class="fas fa-info-circle"></i> Informations
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p class="mb-1">
+                                                            <strong>Date d'envoi:</strong><br>
+                                                            {{ message.dateEnvoi|date('d/m/Y H:i') }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p class="mb-1">
+                                                            <strong>Statut:</strong><br>
+                                                            {% if message.expediteur.id == app.user.id %}
+                                                                <span class="badge badge-primary">Envoyé</span>
+                                                            {% else %}
+                                                                {% if message.lu %}
+                                                                    <span class="badge badge-success">Lu</span>
+                                                                {% else %}
+                                                                    <span class="badge badge-warning">Non lu</span>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white">
+                                                <h6 class="card-title mb-0">
+                                                    <i class="fas fa-comment-alt"></i> Contenu du message
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="message-content" style="white-space: pre-wrap;">
+                                                    {{ message.contenu }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="btn-group">
+                                    <a href="{{ path('app_message_index') }}" class="btn btn-default">
+                                        <i class="fas fa-arrow-left"></i> Retour
+                                    </a>
+
+                                    {% if message.expediteur.id == app.user.id or 'ROLE_ADMIN' in app.user.roles %}
+                                        <a href="{{ path('app_message_edit', {'id': message.id}) }}"
+                                           class="btn btn-warning ml-2">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                    {% endif %}
+
+                                    {% if message.expediteur.id == app.user.id or 'ROLE_ADMIN' in app.user.roles %}
+                                        <form method="post"
+                                              action="{{ path('app_message_delete', {'id': message.id}) }}"
+                                              class="d-inline ml-2"
+                                              onsubmit="return confirm('Supprimer ce message ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ message.id) }}">
+                                            <button class="btn btn-danger">
+                                                <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    {% if message.destinataire.id == app.user.id %}
+                                        <a href="{{ path('app_message_new') }}?destinataire={{ message.expediteur.id }}"
+                                           class="btn btn-primary ml-2">
+                                            <i class="fas fa-reply"></i> Répondre
+                                        </a>
+
+                                        {% if not message.lu or message.lu == false %}
+                                            <form method="post"
+                                                  action="{{ path('app_message_mark_read', {'id': message.id}) }}"
+                                                  class="d-inline ml-2">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('read' ~ message.id) }}">
+                                                <button class="btn btn-success">
+                                                    <i class="fas fa-check"></i> Marquer comme lu
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 {% endblock %}

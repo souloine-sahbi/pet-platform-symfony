@@ -1,37 +1,264 @@
-{% extends 'base.html.twig' %}
+{% extends app.user ? (app.user.roles[0] == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig') : 'base.html.twig' %}
 
-{% block title %}Message index{% endblock %}
+{% block title %}Messagerie - PetNexus{% endblock %}
 
 {% block body %}
-    <h1>Message index</h1>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Messagerie</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path(app.user.roles[0] == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                            <li class="breadcrumb-item active">Messages</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Contenu</th>
-                <th>DateEnvoi</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for message in messages %}
-            <tr>
-                <td>{{ message.id }}</td>
-                <td>{{ message.contenu }}</td>
-                <td>{{ message.dateEnvoi ? message.dateEnvoi|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_message_show', {'id': message.id}) }}">show</a>
-                    <a href="{{ path('app_message_edit', {'id': message.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Liste des conversations -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-users"></i>
+                                    Conversations
+                                </h3>
+                                <div class="card-tools">
+                                    <a href="{{ path('app_message_new') }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus"></i> Nouveau
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                        {% set conversations = [] %}
+                                        {% for message in messages %}
+                                            {% set otherUser = message.expediteur.id == app.user.id ? message.destinataire : message.expediteur %}
+                                            {% set conversationKey = otherUser.id %}
 
-    <a href="{{ path('app_message_new') }}">Create new</a>
+                                            {% if conversationKey not in conversations|keys %}
+                                                {% set conversations = conversations|merge({(conversationKey): {
+                                                    'user': otherUser,
+                                                    'lastMessage': message,
+                                                    'unread': message.destinataire.id == app.user.id and (not message.lu or message.lu == false)
+                                                }}) %}
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% for conversation in conversations|sort((a, b) => b.lastMessage.dateEnvoi <=> a.lastMessage.dateEnvoi) %}
+                                            <tr onclick="window.location='{{ path('app_message_conversation', {'userId': conversation.user.id}) }}'"
+                                                style="cursor: pointer;"
+                                                class="{{ conversation.unread ? 'table-info' : '' }}">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="mr-3">
+                                                            <i class="fas fa-user-circle fa-2x"></i>
+                                                        </div>
+                                                        <div>
+                                                            <strong>{{ conversation.user.prenom }} {{ conversation.user.nom }}</strong>
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                {{ conversation.lastMessage.contenu|slice(0, 30) }}...
+                                                            </small>
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                {{ conversation.lastMessage.dateEnvoi|date('d/m/Y H:i') }}
+                                                            </small>
+                                                        </div>
+                                                        {% if conversation.unread %}
+                                                            <span class="badge badge-primary ml-auto">Nouveau</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td class="text-center text-muted py-4">
+                                                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                                    Aucune conversation
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liste des messages -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-envelope"></i>
+                                    Tous les messages
+                                </h3>
+                                <div class="card-tools">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm" id="filterReceived">
+                                            <i class="fas fa-inbox"></i> Reçus
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" id="filterSent">
+                                            <i class="fas fa-paper-plane"></i> Envoyés
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" id="filterAll">
+                                            <i class="fas fa-list"></i> Tous
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>De/À</th>
+                                            <th>Message</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for message in messages %}
+                                            <tr data-type="{{ message.expediteur.id == app.user.id ? 'sent' : 'received' }}"
+                                                class="{{ message.expediteur.id == app.user.id ? 'table-light' : '' }}">
+                                                <td>
+                                                    {% if message.expediteur.id == app.user.id %}
+                                                        <i class="fas fa-paper-plane text-primary"></i>
+                                                        <strong>À:</strong> {{ message.destinataire.prenom }} {{ message.destinataire.nom }}
+                                                    {% else %}
+                                                        <i class="fas fa-inbox text-success"></i>
+                                                        <strong>De:</strong> {{ message.expediteur.prenom }} {{ message.expediteur.nom }}
+                                                        {% if not message.lu or message.lu == false %}
+                                                            <span class="badge badge-success ml-2">Nouveau</span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                                                        {{ message.contenu|slice(0, 50) }}...
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">
+                                                        {{ message.dateEnvoi|date('d/m/Y H:i') }}
+                                                    </small>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ path('app_message_show', {'id': message.id}) }}"
+                                                           class="btn btn-info" title="Voir">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+
+                                                        {% if message.expediteur.id == app.user.id or 'ROLE_ADMIN' in app.user.roles %}
+                                                            <a href="{{ path('app_message_edit', {'id': message.id}) }}"
+                                                               class="btn btn-warning" title="Modifier">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                        {% endif %}
+
+                                                        {% if message.expediteur.id == app.user.id or 'ROLE_ADMIN' in app.user.roles %}
+                                                            <form method="post"
+                                                                  action="{{ path('app_message_delete', {'id': message.id}) }}"
+                                                                  class="d-inline"
+                                                                  onsubmit="return confirm('Supprimer ce message ?')">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ message.id) }}">
+                                                                <button class="btn btn-danger" title="Supprimer">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+
+                                                        {% if message.destinataire.id == app.user.id and (not message.lu or message.lu == false) %}
+                                                            <form method="post"
+                                                                  action="{{ path('app_message_mark_read', {'id': message.id}) }}"
+                                                                  class="d-inline">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('read' ~ message.id) }}">
+                                                                <button class="btn btn-success" title="Marquer comme lu">
+                                                                    <i class="fas fa-check"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="fas fa-comments fa-2x mb-2"></i><br>
+                                                    Aucun message
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                    <span class="text-muted">
+                                        Total: {{ messages|length }} message(s)
+                                    </span>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <a href="{{ path('app_message_new') }}" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane"></i> Nouveau message
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filtres des messages
+            const filterReceived = document.getElementById('filterReceived');
+            const filterSent = document.getElementById('filterSent');
+            const filterAll = document.getElementById('filterAll');
+
+            function filterMessages(type) {
+                document.querySelectorAll('tbody tr').forEach(row => {
+                    if (type === 'all') {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = row.dataset.type === type ? '' : 'none';
+                    }
+                });
+
+                // Mettre à jour les boutons actifs
+                [filterReceived, filterSent, filterAll].forEach(btn => btn.classList.remove('active'));
+                if (type === 'received') filterReceived.classList.add('active');
+                if (type === 'sent') filterSent.classList.add('active');
+                if (type === 'all') filterAll.classList.add('active');
+            }
+
+            filterReceived.addEventListener('click', () => filterMessages('received'));
+            filterSent.addEventListener('click', () => filterMessages('sent'));
+            filterAll.addEventListener('click', () => filterMessages('all'));
+
+            // Initialiser avec tous les messages
+            filterMessages('all');
+        });
+    </script>
 {% endblock %}

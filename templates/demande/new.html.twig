@@ -1,11 +1,83 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Demande{% endblock %}
+{% block title %}Nouvelle demande{% endblock %}
 
 {% block body %}
-    <h1>Create new Demande</h1>
+    <div class="container mt-4">
+        <h1 class="mb-4">
+            <i class="fas fa-paper-plane"></i>
+            {% if annonce %}
+                Demande pour : {{ annonce.titre }}
+            {% else %}
+                Nouvelle demande
+            {% endif %}
+        </h1>
 
-    {{ include('demande/_form.html.twig') }}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="h5 mb-0">
+                    {% if annonce %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            Vous faites une demande concernant l'annonce :
+                            <strong>"{{ annonce.titre }}"</strong>
+                        </div>
+                    {% else %}
+                        Créer une nouvelle demande
+                    {% endif %}
+                </h2>
+            </div>
 
-    <a href="{{ path('app_demande_index') }}">back to list</a>
+            <div class="card-body">
+                {% if annonce %}
+                    <div class="mb-4">
+                        <h5>Détails de l'annonce :</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Type :</strong> {{ annonce.type|capitalize }}</p>
+                                <p><strong>Auteur :</strong> {{ annonce.auteur.nomComplet }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Date :</strong> {{ annonce.datePublication|date('d/m/Y') }}</p>
+                                <p><strong>Statut :</strong>
+                                    <span class="badge bg-success">Active</span>
+                                </p>
+                            </div>
+                        </div>
+                        {% if annonce.description %}
+                            <div class="mt-2">
+                                <strong>Description :</strong>
+                                <p class="text-muted">{{ annonce.description|slice(0, 200) }}...</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {{ form_start(form) }}
+                {% if not annonce %}
+                    {{ form_row(form.annonce) }}
+                {% endif %}
+
+                {{ form_row(form.message) }}
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i> Envoyer la demande
+                    </button>
+
+                    {% if annonce %}
+                        <a href="{{ path('app_annonce_show', {'id': annonce.id}) }}"
+                           class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_demande_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    {% endif %}
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
 {% endblock %}

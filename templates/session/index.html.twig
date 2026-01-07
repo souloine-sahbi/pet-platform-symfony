@@ -1,41 +1,214 @@
-{% extends 'base.html.twig' %}
+{% extends app.user ? (app.user.roles[0] == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig') : 'base.html.twig' %}
 
-{% block title %}Session index{% endblock %}
+{% block title %}Gestion des Sessions - PetNexus{% endblock %}
 
 {% block body %}
-    <h1>Session index</h1>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Gestion des Sessions</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path(app.user.roles[0] == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                            <li class="breadcrumb-item active">Sessions</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>DateDebut</th>
-                <th>DateFin</th>
-                <th>Statut</th>
-                <th>Description</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for session in sessions %}
-            <tr>
-                <td>{{ session.id }}</td>
-                <td>{{ session.dateDebut ? session.dateDebut|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ session.dateFin ? session.dateFin|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ session.statut }}</td>
-                <td>{{ session.description }}</td>
-                <td>
-                    <a href="{{ path('app_session_show', {'id': session.id}) }}">show</a>
-                    <a href="{{ path('app_session_edit', {'id': session.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-check"></i>
+                            Liste des Sessions
+                        </h3>
+                        <div class="card-tools">
+                            <a href="{{ path('app_session_new') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Nouvelle Session
+                            </a>
+                        </div>
+                    </div>
 
-    <a href="{{ path('app_session_new') }}">Create new</a>
+                    <div class="card-body">
+                        <!-- Filtres -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <select class="form-control" id="statutFilter">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="en_cours">En cours</option>
+                                    <option value="terminee">Terminée</option>
+                                    <option value="annulee">Annulée</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="date" class="form-control" id="dateFilter" placeholder="Filtrer par date">
+                            </div>
+                        </div>
+
+                        <!-- Tableau -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date début</th>
+                                    <th>Date fin</th>
+                                    <th>Demande</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for session in sessions %}
+                                    <tr data-statut="{{ session.statut }}" data-date="{{ session.dateDebut|date('Y-m-d') }}">
+                                        <td>{{ session.id }}</td>
+                                        <td>{{ session.dateDebut|date('d/m/Y H:i') }}</td>
+                                        <td>{{ session.dateFin ? session.dateFin|date('d/m/Y H:i') : 'En cours' }}</td>
+                                        <td>
+                                            {% if session.demande %}
+                                                <a href="{{ path('app_demande_show', {'id': session.demande.id}) }}">
+                                                    Demande #{{ session.demande.id }}
+                                                </a>
+                                                <br>
+                                                <small class="text-muted">{{ session.demande.annonce.titre|slice(0, 30) }}...</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                        <span class="badge badge-{{
+                                        session.statut == 'en_cours' ? 'warning' :
+                                        (session.statut == 'terminee' ? 'success' : 'danger')
+                                        }}">
+                                            {{ session.statut|replace({'_': ' '})|title }}
+                                        </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ path('app_session_show', {'id': session.id}) }}"
+                                                   class="btn btn-info btn-sm" title="Voir">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                {% if session.demande and
+                                                    (app.user.id == session.demande.demandeur.id or
+                                                    app.user.id == session.demande.destinataire.id or
+                                                    'ROLE_ADMIN' in app.user.roles) %}
+                                                    <a href="{{ path('app_session_edit', {'id': session.id}) }}"
+                                                       class="btn btn-warning btn-sm" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                {% endif %}
+
+                                                {% if session.statut == 'en_cours' %}
+                                                    <form method="post"
+                                                          action="{{ path('app_session_terminate', {'id': session.id}) }}"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Terminer cette session ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('terminate' ~ session.id) }}">
+                                                        <button class="btn btn-success btn-sm" title="Terminer">
+                                                            <i class="fas fa-flag-checkered"></i>
+                                                        </button>
+                                                    </form>
+
+                                                    <form method="post"
+                                                          action="{{ path('app_session_cancel', {'id': session.id}) }}"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Annuler cette session ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ session.id) }}">
+                                                        <button class="btn btn-danger btn-sm" title="Annuler">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+
+                                                {% if 'ROLE_ADMIN' in app.user.roles or
+                                                    (session.demande and
+                                                    (app.user.id == session.demande.demandeur.id or
+                                                    app.user.id == session.demande.destinataire.id)) %}
+                                                    <form method="post"
+                                                          action="{{ path('app_session_delete', {'id': session.id}) }}"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Supprimer cette session ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ session.id) }}">
+                                                        <button class="btn btn-danger btn-sm" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">Aucune session trouvée</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                            <span class="text-muted">
+                                Total: {{ sessions|length }} session(s)
+                            </span>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <div class="btn-group">
+                                    <span class="badge badge-warning mr-2">En cours</span>
+                                    <span class="badge badge-success mr-2">Terminée</span>
+                                    <span class="badge badge-danger">Annulée</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statutFilter = document.getElementById('statutFilter');
+            const dateFilter = document.getElementById('dateFilter');
+
+            function filterTable() {
+                const statutValue = statutFilter.value;
+                const dateValue = dateFilter.value;
+
+                document.querySelectorAll('tbody tr').forEach(row => {
+                    let show = true;
+
+                    // Filtre par statut
+                    if (statutValue && row.dataset.statut !== statutValue) {
+                        show = false;
+                    }
+
+                    // Filtre par date
+                    if (dateValue && row.dataset.date !== dateValue) {
+                        show = false;
+                    }
+
+                    row.style.display = show ? '' : 'none';
+                });
+            }
+
+            statutFilter.addEventListener('change', filterTable);
+            dateFilter.addEventListener('change', filterTable);
+
+            // Initialiser le filtre de date avec la date d'aujourd'hui
+            const today = new Date().toISOString().split('T')[0];
+            dateFilter.value = today;
+            filterTable();
+        });
+    </script>
 {% endblock %}

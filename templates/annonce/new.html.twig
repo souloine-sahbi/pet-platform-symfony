@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer une annonce{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="mb-4">
+            <i class="fas fa-bullhorn"></i> Créer une annonce
+        </h1>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Nouvelle annonce</h2>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                <div class="row">
+                    <div class="col-md-8">
+                        {{ form_row(form.titre) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_row(form.type) }}
+                    </div>
+                </div>
+
+                {{ form_row(form.description) }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.statut) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.animals) }}
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            Sélectionnez un ou plusieurs animaux concernés par cette annonce.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i> Publier l'annonce
+                    </button>
+                    <a href="{{ path('app_annonce_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    {% block javascripts %}
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script>
+            $(document).ready(function() {
+                // Initialiser Select2 pour la sélection multiple
+                $('.select2-multiple').select2({
+                    placeholder: "Sélectionnez un ou plusieurs animaux",
+                    allowClear: true
+                });
+            });
+        </script>
+    {% endblock %}
+{% endblock %}

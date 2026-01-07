@@ -30,6 +30,12 @@ class Session
     #[ORM\JoinColumn(nullable: false)]
     private ?Demande $demande = null;
 
+    public function __construct()
+    {
+        $this->dateDebut = new \DateTimeImmutable();
+        $this->statut = 'en_cours';
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -43,7 +49,6 @@ class Session
     public function setDateDebut(\DateTimeImmutable $dateDebut): static
     {
         $this->dateDebut = $dateDebut;
-
         return $this;
     }
 
@@ -55,7 +60,6 @@ class Session
     public function setDateFin(?\DateTimeImmutable $dateFin): static
     {
         $this->dateFin = $dateFin;
-
         return $this;
     }
 
@@ -67,7 +71,6 @@ class Session
     public function setStatut(string $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 
@@ -79,7 +82,6 @@ class Session
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -91,8 +93,6 @@ class Session
     public function setDemande(Demande $demande): static
     {
         $this->demande = $demande;
-
         return $this;
     }
-
 }

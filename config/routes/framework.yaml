@@ -1,8 +1,4 @@
 when@dev:
     _errors:
-<<<<<<< HEAD
-        resource: '@FrameworkBundle/Resources/config/routing/errors.php'
-=======
         resource: '@FrameworkBundle/Resources/config/routing/errors.xml'
->>>>>>> origin/etudiant3-demandes-sessions
         prefix: /_error

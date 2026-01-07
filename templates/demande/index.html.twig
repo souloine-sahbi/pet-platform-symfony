@@ -1,37 +1,213 @@
-{% extends 'base.html.twig' %}
+{% extends app.user.role == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig' %}
 
-{% block title %}Demande index{% endblock %}
+{% block title %}Gestion des Demandes - PetNexus{% endblock %}
 
 {% block body %}
-    <h1>Demande index</h1>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Gestion des Demandes</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path(app.user.role == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                            <li class="breadcrumb-item active">Demandes</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>DateEnvoi</th>
-                <th>Statut</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for demande in demandes %}
-            <tr>
-                <td>{{ demande.id }}</td>
-                <td>{{ demande.dateEnvoi ? demande.dateEnvoi|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ demande.statut }}</td>
-                <td>
-                    <a href="{{ path('app_demande_show', {'id': demande.id}) }}">show</a>
-                    <a href="{{ path('app_demande_edit', {'id': demande.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-exchange-alt"></i>
+                            Liste des Demandes
+                        </h3>
+                        <div class="card-tools">
+                            <a href="{{ path('app_demande_new') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Nouvelle Demande
+                            </a>
+                        </div>
+                    </div>
 
-    <a href="{{ path('app_demande_new') }}">Create new</a>
+                    <div class="card-body">
+                        <!-- Filtres -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <select class="form-control" id="statutFilter">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="en_attente">En attente</option>
+                                    <option value="acceptee">Acceptée</option>
+                                    <option value="refusee">Refusée</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-control" id="typeDemandeFilter">
+                                    <option value="">Tous les types</option>
+                                    <option value="envoyees">Demandes envoyées</option>
+                                    <option value="recues">Demandes reçues</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tableau -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Annonce</th>
+                                    <th>Demandeur</th>
+                                    <th>Destinataire</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for demande in demandes %}
+                                    <tr data-statut="{{ demande.statut }}"
+                                        data-type="{% if demande.demandeur.id == app.user.id %}envoyee{% else %}recue{% endif %}">
+                                        <td>{{ demande.id }}</td>
+                                        <td>{{ demande.dateEnvoi|date('d/m/Y H:i') }}</td>
+                                        <td>
+                                            <a href="#">{{ demande.annonce.titre }}</a>
+                                        </td>
+                                        <td>
+                                            <div class="user-info">
+                                                <i class="fas fa-user"></i>
+                                                {{ demande.demandeur.prenom }} {{ demande.demandeur.nom }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="user-info">
+                                                <i class="fas fa-user"></i>
+                                                {{ demande.destinataire.prenom }} {{ demande.destinataire.nom }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                        <span class="badge badge-{{
+                                        demande.statut == 'en_attente' ? 'warning' :
+                                        (demande.statut == 'acceptee' ? 'success' : 'danger')
+                                        }}">
+                                            {{ demande.statut|replace({'_': ' '})|title }}
+                                        </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ path('app_demande_show', {'id': demande.id}) }}"
+                                                   class="btn btn-info btn-sm" title="Voir">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                {% if demande.destinataire.id == app.user.id and demande.statut == 'en_attente' %}
+                                                    <!-- Actions pour le destinataire -->
+                                                    <form method="post"
+                                                          action="{{ path('app_demande_accept', {'id': demande.id}) }}"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Accepter cette demande ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ demande.id) }}">
+                                                        <button class="btn btn-success btn-sm" title="Accepter">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    </form>
+
+                                                    <form method="post"
+                                                          action="{{ path('app_demande_refuse', {'id': demande.id}) }}"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Refuser cette demande ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ demande.id) }}">
+                                                        <button class="btn btn-danger btn-sm" title="Refuser">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+
+                                                {% if demande.demandeur.id == app.user.id %}
+                                                    <a href="{{ path('app_demande_edit', {'id': demande.id}) }}"
+                                                       class="btn btn-warning btn-sm" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                {% endif %}
+
+                                                {% if app.user.role == 'ROLE_ADMIN' or demande.demandeur.id == app.user.id %}
+                                                    <form method="post"
+                                                          action="{{ path('app_demande_delete', {'id': demande.id}) }}"
+                                                          class="d-inline"
+                                                          onsubmit="return confirm('Supprimer cette demande ?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ demande.id) }}">
+                                                        <button class="btn btn-danger btn-sm" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">Aucune demande trouvée</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                            <span class="text-muted">
+                                Total: {{ demandes|length }} demande(s)
+                            </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statutFilter = document.getElementById('statutFilter');
+            const typeFilter = document.getElementById('typeDemandeFilter');
+
+            function filterTable() {
+                const statutValue = statutFilter.value;
+                const typeValue = typeFilter.value;
+
+                document.querySelectorAll('tbody tr').forEach(row => {
+                    let show = true;
+
+                    // Filtre par statut
+                    if (statutValue && row.dataset.statut !== statutValue) {
+                        show = false;
+                    }
+
+                    // Filtre par type
+                    if (typeValue) {
+                        if (typeValue === 'envoyees' && row.dataset.type !== 'envoyee') {
+                            show = false;
+                        }
+                        if (typeValue === 'recues' && row.dataset.type !== 'recue') {
+                            show = false;
+                        }
+                    }
+
+                    row.style.display = show ? '' : 'none';
+                });
+            }
+
+            statutFilter.addEventListener('change', filterTable);
+            typeFilter.addEventListener('change', filterTable);
+        });
+    </script>
 {% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ annonce.titre }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="mb-4">
+                    <i class="fas fa-bullhorn"></i> {{ annonce.titre }}
+                    <span class="badge bg-{{ annonce.statut == 'active' ? 'success' : 'secondary' }} float-end">
+                    {{ annonce.statut == 'active' ? 'Active' : 'Clôturée' }}
+                </span>
+                </h1>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-{{ annonce.statut == 'active' ? 'primary' : 'secondary' }} text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-light text-dark">{{ annonce.type|capitalize }}</span>
+                            <span>
+                            <i class="fas fa-user"></i>
+                            {{ annonce.auteur.nomComplet }}
+                        </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <h3>Description</h3>
+                        <p class="lead">{{ annonce.description }}</p>
+
+                        {% if annonce.animals|length > 0 %}
+                            <div class="mt-4">
+                                <h4>
+                                    <i class="fas fa-paw"></i> Animaux concernés
+                                    <span class="badge bg-info">{{ annonce.animals|length }}</span>
+                                </h4>
+                                <div class="row">
+                                    {% for animal in annonce.animals %}
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card">
+                                                {% if animal.photo %}
+                                                    <img src="{{ asset('uploads/animaux/' ~ animal.photo) }}"
+                                                         class="card-img-top"
+                                                         alt="{{ animal.nom }}"
+                                                         style="height: 150px; object-fit: cover;">
+                                                {% else %}
+                                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                                                         style="height: 150px;">
+                                                        <i class="fas fa-paw fa-3x text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="card-body">
+                                                    <h6 class="card-title">{{ animal.nom }}</h6>
+                                                    <p class="card-text small">
+                                                        <strong>Race :</strong> {{ animal.race }}<br>
+                                                        <strong>Âge :</strong> {{ animal.age }} an(s)<br>
+                                                        <strong>Sexe :</strong> {{ animal.sexe == 'male' ? 'Mâle' : 'Femelle' }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i>
+                                    Publiée le {{ annonce.datePublication|date('d/m/Y à H:i') }}
+                                </small>
+                            </div>
+
+                            <div>
+                                {% if app.user and app.user != annonce.auteur and annonce.statut == 'active' %}
+                                    <a href="{{ path('app_demande_new', {'annonce_id': annonce.id}) }}"
+                                       class="btn btn-primary">
+                                        <i class="fas fa-hand-paper"></i> Faire une demande
+                                    </a>
+                                {% endif %}
+
+                                {% if app.user == annonce.auteur or is_granted('ROLE_ADMIN') %}
+                                    <a href="{{ path('app_annonce_edit', {'id': annonce.id}) }}"
+                                       class="btn btn-warning">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                {% endif %}
+
+                                <a href="{{ path('app_annonce_index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle"></i> Informations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Auteur :</th>
+                                <td>{{ annonce.auteur.nomComplet }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email :</th>
+                                <td>{{ annonce.auteur.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Téléphone :</th>
+                                <td>{{ annonce.auteur.telephone ?? 'Non renseigné' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type :</th>
+                                <td>{{ annonce.type|capitalize }}</td>
+                            </tr>
+                            <tr>
+                                <th>Statut :</th>
+                                <td>
+                                <span class="badge bg-{{ annonce.statut == 'active' ? 'success' : 'secondary' }}">
+                                    {{ annonce.statut == 'active' ? 'Active' : 'Clôturée' }}
+                                </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date :</th>
+                                <td>{{ annonce.datePublication|date('d/m/Y H:i') }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                {% if annonce.demandes|length > 0 %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-clipboard-list"></i> Demandes
+                                <span class="badge bg-primary">{{ annonce.demandes|length }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% for demande in annonce.demandes %}
+                                <div class="mb-3 p-2 border rounded">
+                                    <strong>{{ demande.demandeur.nomComplet }}</strong>
+                                    <small class="text-muted d-block">
+                                        {{ demande.dateEnvoi|date('d/m/Y H:i') }}
+                                    </small>
+                                    <p class="mb-1 small">{{ demande.message|slice(0, 100) }}...</p>
+                                    <span class="badge bg-{{ demande.statut == 'en_attente' ? 'warning' : (demande.statut == 'accepte' ? 'success' : 'danger') }}">
+                            {{ demande.statut }}
+                        </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
