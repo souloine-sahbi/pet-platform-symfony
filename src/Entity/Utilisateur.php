@@ -3,8 +3,11 @@
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -26,7 +29,7 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     #[ORM\Column(length: 100)]
     private ?string $prenom = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
@@ -44,6 +47,43 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     #[ORM\Column]
     private array $roles = [];
 
+    // CORRECTION: Utilisez Collection, pas App\Entity\Collection
+    #[ORM\OneToMany(targetEntity: Demande::class, mappedBy: 'demandeur')]
+    private Collection $demandesEnvoyees;
+
+    #[ORM\OneToMany(targetEntity: Demande::class, mappedBy: 'destinataire')]
+    private Collection $demandesRecues;
+
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'expediteur')]
+    private Collection $messagesEnvoyes;
+
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'destinataire')]
+    private Collection $messagesRecus;
+
+    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'evaluateur')]
+    private Collection $evaluationsEnvoyees;
+
+    #[ORM\OneToMany(targetEntity: Evaluation::class, mappedBy: 'evalue')]
+    private Collection $evaluationsRecues;
+
+    #[ORM\OneToMany(targetEntity: Annonce::class, mappedBy: 'auteur')]
+    private Collection $annonces;
+
+    #[ORM\OneToMany(targetEntity: Animal::class, mappedBy: 'proprietaire')]
+    private Collection $animaux;
+
+    public function __construct()
+    {
+        $this->demandesEnvoyees = new ArrayCollection();
+        $this->demandesRecues = new ArrayCollection();
+        $this->messagesEnvoyes = new ArrayCollection();
+        $this->messagesRecus = new ArrayCollection();
+        $this->evaluationsEnvoyees = new ArrayCollection();
+        $this->evaluationsRecues = new ArrayCollection();
+        $this->annonces = new ArrayCollection();
+        $this->animaux = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -57,7 +97,6 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
         return $this;
     }
 
@@ -69,7 +108,6 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
-
         return $this;
     }
 
@@ -81,7 +119,6 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -93,7 +130,6 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -105,7 +141,6 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setPhotoProfil(?string $photoProfil): static
     {
         $this->photoProfil = $photoProfil;
-
         return $this;
     }
 
@@ -117,7 +152,6 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setAdresse(?string $adresse): static
     {
         $this->adresse = $adresse;
-
         return $this;
     }
 
@@ -129,13 +163,13 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setTelephone(?string $telephone): static
     {
         $this->telephone = $telephone;
-
         return $this;
     }
 
     public function getRoles(): array
     {
-        return $this->roles;
+        $roles = $this->roles;
+        // Ajouter ROLE_USER par défaut
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
@@ -143,9 +177,9 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
     }
+
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
@@ -153,11 +187,76 @@ abstract class Utilisateur implements UserInterface, PasswordAuthenticatedUserIn
 
     public function eraseCredentials(): void
     {
-        // Si vous stockez des données sensibles temporaires, nettoyez-les ici
+        // Nettoyez les données temporaires si nécessaire
     }
 
     public function getNomComplet(): string
     {
         return $this->prenom . ' ' . $this->nom;
     }
+
+    // Getters pour les relations
+
+    /**
+     * @return Collection<int, Demande>
+     */
+    public function getDemandesEnvoyees(): Collection
+    {
+        return $this->demandesEnvoyees;
+    }
+
+    public function addDemandesEnvoyee(Demande $demandesEnvoyee): static
+    {
+        if (!$this->demandesEnvoyees->contains($demandesEnvoyee)) {
+            $this->demandesEnvoyees->add($demandesEnvoyee);
+            $demandesEnvoyee->setDemandeur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDemandesEnvoyee(Demande $demandesEnvoyee): static
+    {
+        if ($this->demandesEnvoyees->removeElement($demandesEnvoyee)) {
+            // set the owning side to null (unless already changed)
+            if ($demandesEnvoyee->getDemandeur() === $this) {
+                $demandesEnvoyee->setDemandeur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Demande>
+     */
+    public function getDemandesRecues(): Collection
+    {
+        return $this->demandesRecues;
+    }
+
+    public function addDemandesRecue(Demande $demandesRecue): static
+    {
+        if (!$this->demandesRecues->contains($demandesRecue)) {
+            $this->demandesRecues->add($demandesRecue);
+            $demandesRecue->setDestinataire($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDemandesRecue(Demande $demandesRecue): static
+    {
+        if ($this->demandesRecues->removeElement($demandesRecue)) {
+            // set the owning side to null (unless already changed)
+            if ($demandesRecue->getDestinataire() === $this) {
+                $demandesRecue->setDestinataire(null);
+            }
+        }
+
+        return $this;
+    }
+
+    // ... Ajoutez les autres getters/setters pour les relations
+    // (messagesEnvoyes, messagesRecus, evaluationsEnvoyees, evaluationsRecues, annonces, animaux)
 }

@@ -12,3 +12,62 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+app_demande_index:
+    path: /demande
+    controller: App\Controller\DemandeController::index
+    methods: GET
+
+app_demande_new:
+    path: /demande/new
+    controller: App\Controller\DemandeController::new
+    methods: [GET, POST]
+
+app_demande_show:
+    path: /demande/{id}
+    controller: App\Controller\DemandeController::show
+    methods: GET
+
+app_demande_edit:
+    path: /demande/{id}/edit
+    controller: App\Controller\DemandeController::edit
+    methods: [GET, POST]
+
+app_demande_delete:
+    path: /demande/{id}
+    controller: App\Controller\DemandeController::delete
+    methods: POST
+
+app_demande_accept:
+    path: /demande/{id}/accept
+    controller: App\Controller\DemandeController::accept
+    methods: POST
+
+app_demande_refuse:
+    path: /demande/{id}/refuse
+    controller: App\Controller\DemandeController::refuse
+    methods: POST
+# Routes Client
+client_dashboard:
+    path: /client/dashboard
+    controller: App\Controller\ClientController::dashboard
+
+client_demandes:
+    path: /client/demandes
+    controller: App\Controller\ClientController::demandes
+
+client_messages:
+    path: /client/messages
+    controller: App\Controller\ClientController::messages
+
+# Routes Admin
+admin_dashboard:
+    path: /admin/dashboard
+    controller: App\Controller\AdminController::dashboard
+
+admin_demandes:
+    path: /admin/demandes
+    controller: App\Controller\AdminController::demandes
+
+admin_messages:
+    path: /admin/messages
+    controller: App\Controller\AdminController::messages

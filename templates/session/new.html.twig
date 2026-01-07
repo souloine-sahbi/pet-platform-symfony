@@ -1,11 +1,83 @@
-{% extends 'base.html.twig' %}
+{% extends app.user ? (app.user.roles[0] == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig') : 'base.html.twig' %}
 
-{% block title %}New Session{% endblock %}
+{% block title %}Nouvelle Session - PetNexus{% endblock %}
 
 {% block body %}
-    <h1>Create new Session</h1>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Nouvelle Session</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path(app.user.roles[0] == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_session_index') }}">Sessions</a></li>
+                            <li class="breadcrumb-item active">Nouvelle</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    {{ include('session/_form.html.twig') }}
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-plus"></i>
+                                    Créer une nouvelle session
+                                </h3>
+                            </div>
 
-    <a href="{{ path('app_session_index') }}">back to list</a>
+                            <div class="card-body">
+                                {{ form_start(form) }}
+                                <div class="row">
+                                    <div class="col-12">
+                                        {{ form_row(form.demande) }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        {{ form_row(form.description) }}
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Créer la session
+                                    </button>
+                                    <a href="{{ path('app_session_index') }}" class="btn btn-default">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                                {{ form_end(form) }}
+                            </div>
+                        </div>
+
+                        <!-- Aide -->
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-question-circle"></i> Informations</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Une session est créée automatiquement lorsqu'une demande est acceptée.</p>
+                                <p>Vous pouvez également créer manuellement une session pour :</p>
+                                <ul>
+                                    <li>Suivre le déroulement d'un échange d'animaux</li>
+                                    <li>Gérer une période de garde</li>
+                                    <li>Superviser une adoption</li>
+                                </ul>
+                                <p class="text-muted">Seules les demandes acceptées peuvent avoir une session associée.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 {% endblock %}

@@ -1,30 +1,243 @@
-{% extends 'base.html.twig' %}
+{% extends app.user.role == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig' %}
 
-{% block title %}Message{% endblock %}
+{% block title %}Détails de la Demande #{{ demande.id }} - PetNexus{% endblock %}
 
 {% block body %}
-    <h1>Message</h1>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Détails de la Demande</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path(app.user.role == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_demande_index') }}">Demandes</a></li>
+                            <li class="breadcrumb-item active">Détails</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ message.id }}</td>
-            </tr>
-            <tr>
-                <th>Contenu</th>
-                <td>{{ message.contenu }}</td>
-            </tr>
-            <tr>
-                <th>DateEnvoi</th>
-                <td>{{ message.dateEnvoi ? message.dateEnvoi|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    Demande #{{ demande.id }}
+                                    <span class="badge badge-{{
+                                    demande.statut == 'en_attente' ? 'warning' :
+                                    (demande.statut == 'acceptee' ? 'success' : 'danger')
+                                    }} ml-2">
+                                    {{ demande.statut|replace({'_': ' '})|title }}
+                                </span>
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5><i class="fas fa-calendar-alt"></i> Informations</h5>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Date d'envoi:</th>
+                                                <td>{{ demande.dateEnvoi|date('d/m/Y H:i') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Statut:</th>
+                                                <td>
+                                                <span class="badge badge-{{
+                                                demande.statut == 'en_attente' ? 'warning' :
+                                                (demande.statut == 'acceptee' ? 'success' : 'danger')
+                                                }}">
+                                                    {{ demande.statut|replace({'_': ' '})|title }}
+                                                </span>
+                                                </td>
+                                            </tr>
+                                            {% if demande.session %}
+                                                <tr>
+                                                    <th>Session associée:</th>
+                                                    <td>
+                                                        <a href="{{ path('app_session_show', {'id': demande.session.id}) }}">
+                                                            Session #{{ demande.session.id }}
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        </table>
+                                    </div>
 
-    <a href="{{ path('app_message_index') }}">back to list</a>
+                                    <div class="col-md-6">
+                                        <h5><i class="fas fa-users"></i> Utilisateurs</h5>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Demandeur:</th>
+                                                <td>
+                                                    <i class="fas fa-user"></i>
+                                                    {{ demande.demandeur.prenom }} {{ demande.demandeur.nom }}
+                                                    <br>
+                                                    <small class="text-muted">{{ demande.demandeur.email }}</small>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Destinataire:</th>
+                                                <td>
+                                                    <i class="fas fa-user"></i>
+                                                    {{ demande.destinataire.prenom }} {{ demande.destinataire.nom }}
+                                                    <br>
+                                                    <small class="text-muted">{{ demande.destinataire.email }}</small>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
 
-    <a href="{{ path('app_message_edit', {'id': message.id}) }}">edit</a>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <h5><i class="fas fa-bullhorn"></i> Annonce concernée</h5>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>{{ demande.annonce.titre }}</h6>
+                                                <p class="text-muted">{{ demande.annonce.description|slice(0, 200) }}...</p>
+                                                <span class="badge badge-info">{{ demande.annonce.type }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-    {{ include('message/_delete_form.html.twig') }}
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <h5><i class="fas fa-envelope"></i> Message de la demande</h5>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                {% if demande.message %}
+                                                    <p>{{ demande.message }}</p>
+                                                {% else %}
+                                                    <p class="text-muted">Aucun message supplémentaire</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="btn-group">
+                                    <a href="{{ path('app_demande_index') }}" class="btn btn-default">
+                                        <i class="fas fa-arrow-left"></i> Retour
+                                    </a>
+
+                                    {% if demande.destinataire.id == app.user.id and demande.statut == 'en_attente' %}
+                                        <form method="post"
+                                              action="{{ path('app_demande_accept', {'id': demande.id}) }}"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Accepter cette demande ? Une session sera créée automatiquement.')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ demande.id) }}">
+                                            <button class="btn btn-success ml-2">
+                                                <i class="fas fa-check"></i> Accepter
+                                            </button>
+                                        </form>
+
+                                        <form method="post"
+                                              action="{{ path('app_demande_refuse', {'id': demande.id}) }}"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Refuser cette demande ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ demande.id) }}">
+                                            <button class="btn btn-danger ml-2">
+                                                <i class="fas fa-times"></i> Refuser
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    {% if demande.demandeur.id == app.user.id or app.user.role == 'ROLE_ADMIN' %}
+                                        <a href="{{ path('app_demande_edit', {'id': demande.id}) }}"
+                                           class="btn btn-warning ml-2">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+
+                                        <form method="post"
+                                              action="{{ path('app_demande_delete', {'id': demande.id}) }}"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Supprimer cette demande ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ demande.id) }}">
+                                            <button class="btn btn-danger ml-2">
+                                                <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    {% if demande.statut == 'acceptee' and demande.session %}
+                                        <a href="{{ path('app_session_show', {'id': demande.session.id}) }}"
+                                           class="btn btn-info ml-2">
+                                            <i class="fas fa-calendar-check"></i> Voir la session
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <!-- Actions rapides -->
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-bolt"></i> Actions</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    {% if demande.destinataire.id == app.user.id %}
+                                        <a href="{{ path('app_message_new') }}?destinataire={{ demande.demandeur.id }}"
+                                           class="btn btn-primary btn-block">
+                                            <i class="fas fa-reply"></i> Répondre
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ path('app_message_new') }}?destinataire={{ demande.destinataire.id }}"
+                                           class="btn btn-primary btn-block">
+                                            <i class="fas fa-envelope"></i> Envoyer un message
+                                        </a>
+                                    {% endif %}
+
+                                    {% if demande.session and demande.session.statut == 'en_cours' %}
+                                        <a href="{{ path('app_session_terminate', {'id': demande.session.id}) }}"
+                                           class="btn btn-warning btn-block"
+                                           onclick="return confirm('Terminer cette session ?')">
+                                            <i class="fas fa-flag-checkered"></i> Terminer la session
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Statut de la demande -->
+                        <div class="card card-{{
+                        demande.statut == 'en_attente' ? 'warning' :
+                        (demande.statut == 'acceptee' ? 'success' : 'danger')
+                        }}">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-info-circle"></i> Statut</h3>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="h4">
+                                    {% if demande.statut == 'en_attente' %}
+                                        <i class="fas fa-clock text-warning"></i><br>
+                                        En attente de réponse
+                                    {% elseif demande.statut == 'acceptee' %}
+                                        <i class="fas fa-check-circle text-success"></i><br>
+                                        Demande acceptée
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i><br>
+                                        Demande refusée
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 {% endblock %}

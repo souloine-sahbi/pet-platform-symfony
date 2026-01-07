@@ -1,11 +1,59 @@
-{% extends 'base.html.twig' %}
+{% extends app.user.role == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig' %}
 
-{% block title %}New Message{% endblock %}
+{% block title %}{{ (editMode) ? 'Modifier' : 'Nouvelle' }} Demande - PetNexus{% endblock %}
 
 {% block body %}
-    <h1>Create new Message</h1>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">{{ (editMode) ? 'Modifier la' : 'Nouvelle' }} Demande</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path(app.user.role == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_demande_index') }}">Demandes</a></li>
+                            <li class="breadcrumb-item active">{{ (editMode) ? 'Modifier' : 'Nouvelle' }}</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    {{ include('message/_form.html.twig') }}
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-{{ (editMode) ? 'edit' : 'plus' }}"></i>
+                                    Formulaire de demande
+                                </h3>
+                            </div>
 
-    <a href="{{ path('app_message_index') }}">back to list</a>
+                            {% include 'demande/_form.html.twig' %}
+                        </div>
+
+                        <!-- Aide -->
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-question-circle"></i> Informations</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Une demande permet de contacter le propriétaire d'une annonce pour :</p>
+                                <ul>
+                                    <li><strong>Adoption :</strong> Adopter un animal</li>
+                                    <li><strong>Échange :</strong> Échanger temporairement un animal</li>
+                                    <li><strong>Petcare :</strong> Proposer ou demander un service de garde</li>
+                                </ul>
+                                <p class="text-muted">Le destinataire recevra une notification et pourra accepter ou refuser votre demande.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 {% endblock %}

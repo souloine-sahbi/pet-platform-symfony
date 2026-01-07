@@ -20,6 +20,19 @@ class Message
     #[ORM\Column]
     private ?\DateTimeImmutable $dateEnvoi = null;
 
+    #[ORM\ManyToOne(inversedBy: 'messagesEnvoyes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $expediteur = null;
+
+    #[ORM\ManyToOne(inversedBy: 'messagesRecus')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $destinataire = null;
+
+    public function __construct()
+    {
+        $this->dateEnvoi = new \DateTimeImmutable();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -33,7 +46,6 @@ class Message
     public function setContenu(string $contenu): static
     {
         $this->contenu = $contenu;
-
         return $this;
     }
 
@@ -45,7 +57,28 @@ class Message
     public function setDateEnvoi(\DateTimeImmutable $dateEnvoi): static
     {
         $this->dateEnvoi = $dateEnvoi;
+        return $this;
+    }
 
+    public function getExpediteur(): ?Utilisateur
+    {
+        return $this->expediteur;
+    }
+
+    public function setExpediteur(?Utilisateur $expediteur): static
+    {
+        $this->expediteur = $expediteur;
+        return $this;
+    }
+
+    public function getDestinataire(): ?Utilisateur
+    {
+        return $this->destinataire;
+    }
+
+    public function setDestinataire(?Utilisateur $destinataire): static
+    {
+        $this->destinataire = $destinataire;
         return $this;
     }
 }

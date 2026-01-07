@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/fontawesome-free/css/all.min.css') }}">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('adminlte/dist/css/adminlte.min.css') }}">
-    
+
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="hold-transition {% block body_class %}sidebar-mini{% endblock %}">
@@ -28,7 +28,7 @@
 <script src="{{ asset('adminlte/dist/js/adminlte.min.js') }}"></script>
 
 {% block javascripts %}
-    {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {# Pas besoin d'importmap avec AdminLTE #}
 {% endblock %}
 </body>
 </html>

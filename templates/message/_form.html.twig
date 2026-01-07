@@ -1,4 +1,36 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+<div class="card-body">
+    <div class="row">
+        <div class="col-md-6">
+            {{ form_row(form.demandeur) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.destinataire) }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            {{ form_row(form.annonce) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.statut) }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {{ form_row(form.message) }}
+        </div>
+    </div>
+</div>
+
+<div class="card-footer">
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+    <a href="{{ path('app_demande_index') }}" class="btn btn-default">
+        <i class="fas fa-times"></i> Annuler
+    </a>
+</div>
 {{ form_end(form) }}

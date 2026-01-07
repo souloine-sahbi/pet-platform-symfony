@@ -57,10 +57,52 @@
                             <p>Utilisateurs</p>
                         </a>
                     </li>
+                    <!-- NOUVEAU : Section Animaux -->
+                    <li class="nav-item">
+                        <a href="{{ path('admin_animaux') }}" class="nav-link">
+                            <i class="nav-icon fas fa-paw"></i>
+                            <p>Animaux</p>
+                        </a>
+                    </li>
+                    <!-- NOUVEAU : Section Annonces -->
+                    <li class="nav-item">
+                        <a href="{{ path('admin_annonces') }}" class="nav-link">
+                            <i class="nav-icon fas fa-bullhorn"></i>
+                            <p>Annonces</p>
+                        </a>
+                    </li>
+                    <!-- NOUVEAU : Section Demandes -->
+                    <li class="nav-item">
+                        <a href="{{ path('admin_demandes') }}" class="nav-link">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <p>Demandes</p>
+                            {% if stats.demandes_en_attente is defined and stats.demandes_en_attente > 0 %}
+                                <span class="badge badge-warning right">{{ stats.demandes_en_attente }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <!-- NOUVEAU : Section Messages -->
+                    <li class="nav-item">
+                        <a href="{{ path('admin_messages') }}" class="nav-link">
+                            <i class="nav-icon fas fa-envelope"></i>
+                            <p>Messages Signalés</p>
+                            {% if stats.messages_signales is defined and stats.messages_signales > 0 %}
+                                <span class="badge badge-danger right">{{ stats.messages_signales }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <!-- EXISTANT : Section Évaluations -->
                     <li class="nav-item">
                         <a href="{{ path('admin_evaluation_index') }}" class="nav-link">
                             <i class="nav-icon fas fa-star"></i>
                             <p>Évaluations</p>
+                        </a>
+                    </li>
+                    <!-- NOUVEAU : Section Paramètres -->
+                    <li class="nav-item">
+                        <a href="{{ path('admin_parametres') }}" class="nav-link">
+                            <i class="nav-icon fas fa-cogs"></i>
+                            <p>Paramètres</p>
                         </a>
                     </li>
                 </ul>
@@ -89,54 +131,117 @@
                     <div class="col-lg-3 col-6">
                         <div class="small-box bg-info">
                             <div class="inner">
-                                <h3>{{ stats.total_users }}</h3>
+                                <h3>{{ stats.total_users ?? 0 }}</h3>
                                 <p>Total Utilisateurs</p>
                             </div>
                             <div class="icon">
                                 <i class="fas fa-users"></i>
                             </div>
+                            <a href="{{ path('admin_utilisateur_index') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
 
                     <div class="col-lg-3 col-6">
                         <div class="small-box bg-success">
                             <div class="inner">
-                                <h3>{{ stats.total_clients }}</h3>
+                                <h3>{{ stats.total_clients ?? 0 }}</h3>
                                 <p>Clients</p>
                             </div>
                             <div class="icon">
                                 <i class="fas fa-user"></i>
                             </div>
+                            <a href="{{ path('admin_utilisateur_index') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
 
                     <div class="col-lg-3 col-6">
                         <div class="small-box bg-danger">
                             <div class="inner">
-                                <h3>{{ stats.total_admins }}</h3>
+                                <h3>{{ stats.total_admins ?? 0 }}</h3>
                                 <p>Administrateurs</p>
                             </div>
                             <div class="icon">
                                 <i class="fas fa-user-shield"></i>
                             </div>
+                            <a href="{{ path('admin_utilisateur_index') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
 
                     <div class="col-lg-3 col-6">
                         <div class="small-box bg-warning">
                             <div class="inner">
-                                <h3>{{ stats.total_evaluations }}</h3>
+                                <h3>{{ stats.total_evaluations ?? 0 }}</h3>
                                 <p>Évaluations</p>
                             </div>
                             <div class="icon">
                                 <i class="fas fa-star"></i>
                             </div>
+                            <a href="{{ path('admin_evaluation_index') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deuxième ligne de statistiques -->
+                <div class="row mt-3">
+                    <!-- NOUVEAU : Stat pour les demandes en attente -->
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>{{ stats.demandes_en_attente ?? 0 }}</h3>
+                                <p>Demandes en Attente</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <a href="{{ path('admin_demandes') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- NOUVEAU : Stat pour les messages signalés -->
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3>{{ stats.messages_signales ?? 0 }}</h3>
+                                <p>Messages Signalés</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <a href="{{ path('admin_messages') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- NOUVEAU : Stat pour les animaux -->
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>{{ stats.total_animaux ?? 0 }}</h3>
+                                <p>Animaux</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-paw"></i>
+                            </div>
+                            <a href="{{ path('admin_animaux') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- NOUVEAU : Stat pour les annonces -->
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>{{ stats.total_annonces ?? 0 }}</h3>
+                                <p>Annonces Actives</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <a href="{{ path('admin_annonces') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
                 </div>
 
                 <!-- Welcome Card -->
-                <div class="row">
+                <div class="row mt-3">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
@@ -147,12 +252,15 @@
                             </div>
                             <div class="card-body">
                                 <p>Vous êtes connecté en tant qu'<strong>Administrateur</strong>.</p>
-                                <p>Cette plateforme vous permet de gérer les utilisateurs et les évaluations.</p>
+                                <p>Cette plateforme vous permet de gérer l'ensemble de la plateforme PetNexus.</p>
 
                                 <div class="alert alert-info">
                                     <h5><i class="icon fas fa-info"></i> Vos responsabilités :</h5>
                                     <ul>
                                         <li>Gestion des utilisateurs (Admin et Client)</li>
+                                        <li>Gestion des animaux et annonces</li>
+                                        <li>Modération des demandes entre utilisateurs</li>
+                                        <li>Gestion des messages signalés</li>
                                         <li>Modération des évaluations</li>
                                         <li>Consultation des statistiques de la plateforme</li>
                                         <li>Surveillance de l'activité globale</li>
@@ -164,21 +272,33 @@
                 </div>
 
                 <!-- Quick Actions -->
-                <div class="row">
+                <div class="row mt-3">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">Actions Rapides</h3>
                             </div>
                             <div class="card-body">
-                                <a href="{{ path('admin_utilisateur_index') }}" class="btn btn-primary mr-2">
+                                <a href="{{ path('admin_utilisateur_index') }}" class="btn btn-primary mr-2 mb-2">
                                     <i class="fas fa-user-plus"></i> Gérer les utilisateurs
                                 </a>
-                                <a href="{{ path('admin_evaluation_index') }}" class="btn btn-warning mr-2">
+                                <a href="{{ path('admin_demandes') }}" class="btn btn-warning mr-2 mb-2">
+                                    <i class="fas fa-clipboard-check"></i> Voir les demandes
+                                </a>
+                                <a href="{{ path('admin_messages') }}" class="btn btn-danger mr-2 mb-2">
+                                    <i class="fas fa-envelope"></i> Messages signalés
+                                </a>
+                                <a href="{{ path('admin_animaux') }}" class="btn btn-info mr-2 mb-2">
+                                    <i class="fas fa-paw"></i> Gérer les animaux
+                                </a>
+                                <a href="{{ path('admin_annonces') }}" class="btn btn-success mr-2 mb-2">
+                                    <i class="fas fa-bullhorn"></i> Gérer les annonces
+                                </a>
+                                <a href="{{ path('admin_evaluation_index') }}" class="btn btn-warning mr-2 mb-2">
                                     <i class="fas fa-star"></i> Voir les évaluations
                                 </a>
-                                <a href="#" class="btn btn-info">
-                                    <i class="fas fa-chart-bar"></i> Statistiques détaillées
+                                <a href="{{ path('admin_parametres') }}" class="btn btn-secondary mb-2">
+                                    <i class="fas fa-cogs"></i> Paramètres
                                 </a>
                             </div>
                         </div>

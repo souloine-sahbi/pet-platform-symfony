@@ -11,7 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: AnnonceRepository::class)]
 class Annonce
 {
-    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -24,13 +23,13 @@ class Annonce
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    private ?string $type = null; // adoption, échange, garde, etc.
 
     #[ORM\Column]
     private ?\DateTime $datePublication = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $statut = null;
+    private ?string $statut = 'active'; // active, cloturee, supprimee
 
     /**
      * @var Collection<int, Animal>
@@ -38,9 +37,22 @@ class Annonce
     #[ORM\ManyToMany(targetEntity: Animal::class, inversedBy: 'annonces')]
     private Collection $animals;
 
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'annonces')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $auteur = null;
+
+    /**
+     * @var Collection<int, Demande>
+     */
+    #[ORM\OneToMany(targetEntity: Demande::class, mappedBy: 'annonce')]
+    private Collection $demandes;
+
     public function __construct()
     {
         $this->animals = new ArrayCollection();
+        $this->demandes = new ArrayCollection();
+        $this->datePublication = new \DateTime();
+        $this->statut = 'active';
     }
 
     public function getId(): ?int
@@ -56,7 +68,6 @@ class Annonce
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
-
         return $this;
     }
 
@@ -68,7 +79,6 @@ class Annonce
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -80,7 +90,6 @@ class Annonce
     public function setType(string $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
@@ -92,7 +101,6 @@ class Annonce
     public function setDatePublication(\DateTime $datePublication): static
     {
         $this->datePublication = $datePublication;
-
         return $this;
     }
 
@@ -104,7 +112,6 @@ class Annonce
     public function setStatut(string $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 
@@ -121,14 +128,55 @@ class Annonce
         if (!$this->animals->contains($animal)) {
             $this->animals->add($animal);
         }
-
         return $this;
     }
 
     public function removeAnimal(Animal $animal): static
     {
         $this->animals->removeElement($animal);
-
         return $this;
+    }
+
+    public function getAuteur(): ?Utilisateur
+    {
+        return $this->auteur;
+    }
+
+    public function setAuteur(?Utilisateur $auteur): static
+    {
+        $this->auteur = $auteur;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Demande>
+     */
+    public function getDemandes(): Collection
+    {
+        return $this->demandes;
+    }
+
+    public function addDemande(Demande $demande): static
+    {
+        if (!$this->demandes->contains($demande)) {
+            $this->demandes->add($demande);
+            $demande->setAnnonce($this);
+        }
+        return $this;
+    }
+
+    public function removeDemande(Demande $demande): static
+    {
+        if ($this->demandes->removeElement($demande)) {
+            if ($demande->getAnnonce() === $this) {
+                $demande->setAnnonce(null);
+            }
+        }
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->titre . ' (' . $this->type . ')';
     }
 }
