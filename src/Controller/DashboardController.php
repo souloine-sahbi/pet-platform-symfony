@@ -20,8 +20,6 @@ class DashboardController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function index(): Response
     {
-        $user = $this->getUser();
-
         if ($this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('admin_dashboard');
         }
@@ -39,13 +37,12 @@ class DashboardController extends AbstractController
         AnimalRepository $animalRepo,
         AnnonceRepository $annonceRepo,
         SessionRepository $sessionRepo
-    ): Response
-    {
+    ): Response {
         $stats = [
             // Stats utilisateurs
             'total_users' => $utilisateurRepo->countTotalUsers(),
-            'total_admins' => $utilisateurRepo->countByType('App\Entity\Admin'),
-            'total_clients' => $utilisateurRepo->countByType('App\Entity\Client'),
+            'total_admins' => $utilisateurRepo->countByType('Admin'),
+            'total_clients' => $utilisateurRepo->countByType('Client'),
 
             // Stats évaluations
             'total_evaluations' => $evaluationRepo->count([]),
@@ -89,9 +86,14 @@ class DashboardController extends AbstractController
         AnimalRepository $animalRepo,
         AnnonceRepository $annonceRepo,
         SessionRepository $sessionRepo
-    ): Response
-    {
+    ): Response {
         $user = $this->getUser();
+
+        // Comptage des messages non lus (utilisé plusieurs fois)
+        $nouveauxMessagesCount = $messageRepo->count(['destinataire' => $user, 'lu' => false]);
+
+        // Comptage des demandes en attente (utilisé plusieurs fois)
+        $demandesRecuesEnAttenteCount = $demandeRepo->count(['destinataire' => $user, 'statut' => 'en_attente']);
 
         // Statistiques pour le client
         $stats = [
@@ -109,19 +111,21 @@ class DashboardController extends AbstractController
 
             // Demandes reçues
             'demandes_recues' => $demandeRepo->count(['destinataire' => $user]),
-            'demandes_recues_en_attente' => $demandeRepo->count(['destinataire' => $user, 'statut' => 'en_attente']),
-            'demandes_recues_count' => $demandeRepo->count(['destinataire' => $user, 'statut' => 'en_attente']),
+            'demandes_recues_en_attente' => $demandesRecuesEnAttenteCount,
+            'demandes_recues_count' => $demandesRecuesEnAttenteCount,
 
             // Messages
             'messages_recus' => $messageRepo->count(['destinataire' => $user]),
-            'nouveaux_messages' => $messageRepo->count(['destinataire' => $user, 'lu' => false]),
-            'nouveaux_messages_count' => $messageRepo->count(['destinataire' => $user, 'lu' => false]),
+            'nouveaux_messages' => $nouveauxMessagesCount,
+            'nouveaux_messages_count' => $nouveauxMessagesCount,
 
             // Sessions
             'sessions_en_cours' => $sessionRepo->countSessionsByUser($user),
         ];
 
-        return $this->render('dashboard/client.html.twig', $stats);
+        return $this->render('dashboard/client.html.twig', [
+            'stats' => $stats,
+        ]);
     }
 
     // ============ ROUTES CLIENT ============
@@ -210,8 +214,9 @@ class DashboardController extends AbstractController
             ['dateEnvoi' => 'DESC']
         );
 
-        return $this->render('admin/demandes.html.twig', [
+        return $this->render('demande/index.html.twig', [
             'demandes' => $demandes,
+            'isAdmin' => true,
         ]);
     }
 
@@ -219,14 +224,29 @@ class DashboardController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function adminMessages(MessageRepository $messageRepo): Response
     {
-        $messages = $messageRepo->findBy(
-            [],
-            ['dateEnvoi' => 'DESC'],
-            100
+        $user = $this->getUser();
+
+        $messagesRecus = $messageRepo->findBy(
+            ['destinataire' => $user],
+            ['dateEnvoi' => 'DESC']
         );
 
-        return $this->render('admin/messages.html.twig', [
+        $messagesEnvoyes = $messageRepo->findBy(
+            ['expediteur' => $user],
+            ['dateEnvoi' => 'DESC']
+        );
+
+        // Fusionner et trier pour la vue "Conversation"
+        $messages = array_merge($messagesRecus, $messagesEnvoyes);
+        usort($messages, function ($a, $b) {
+            return $b->getDateEnvoi() <=> $a->getDateEnvoi();
+        });
+
+        return $this->render('message/index.html.twig', [
+            'messagesRecus' => $messagesRecus,
+            'messagesEnvoyes' => $messagesEnvoyes,
             'messages' => $messages,
+            'isAdmin' => true,
         ]);
     }
 

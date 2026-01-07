@@ -1,0 +1,165 @@
+{% extends 'layout/client.html.twig' %}
+
+{% block title %}Mes Demandes - PetNexus{% endblock %}
+
+{% block content %}
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><i class="fas fa-clipboard-list"></i> Mes Demandes</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            {% endfor %}
+
+            <div class="row">
+                <!-- Demandes Reçues -->
+                <div class="col-lg-6">
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-inbox"></i> Demandes Reçues
+                                {% if demandesRecues|length > 0 %}
+                                    <span class="badge badge-light ml-2">{{ demandesRecues|length }}</span>
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            {% if demandesRecues|length > 0 %}
+                                {% for demande in demandesRecues %}
+                                    <div class="callout callout-{{ demande.statut == 'en_attente' ? 'warning' : (demande.statut == 'accepte' ? 'success' : 'danger') }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h5>{{ demande.demandeur.nomComplet }}</h5>
+                                                <p class="mb-1">
+                                                    {% if demande.annonce %}
+                                                        <strong>Annonce :</strong> {{ demande.annonce.titre }}
+                                                    {% endif %}
+                                                    {% if demande.animal %}
+                                                        <br><strong>Animal :</strong> {{ demande.animal.nom }}
+                                                    {% endif %}
+                                                </p>
+                                                <p class="text-muted mb-2">{{ demande.message|slice(0, 100) }}{% if demande.message|length > 100 %}...{% endif %}</p>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar"></i> {{ demande.dateEnvoi|date('d/m/Y H:i') }}
+                                                </small>
+                                            </div>
+                                            <div>
+                                                {% if demande.statut == 'en_attente' %}
+                                                    <span class="badge badge-warning">En attente</span>
+                                                {% elseif demande.statut == 'accepte' %}
+                                                    <span class="badge badge-success">Acceptée</span>
+                                                {% else %}
+                                                    <span class="badge badge-danger">Refusée</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <a href="{{ path('app_demande_show', {'id': demande.id}) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </a>
+                                            {% if demande.statut == 'en_attente' %}
+                                                <form method="post" action="{{ path('app_demande_accept', {'id': demande.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ demande.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check"></i> Accepter
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_demande_reject', {'id': demande.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ demande.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-times"></i> Refuser
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Aucune demande reçue</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demandes Envoyées -->
+                <div class="col-lg-6">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-paper-plane"></i> Demandes Envoyées
+                                {% if demandesEnvoyees|length > 0 %}
+                                    <span class="badge badge-light ml-2">{{ demandesEnvoyees|length }}</span>
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            {% if demandesEnvoyees|length > 0 %}
+                                {% for demande in demandesEnvoyees %}
+                                    <div class="callout callout-{{ demande.statut == 'en_attente' ? 'info' : (demande.statut == 'accepte' ? 'success' : 'danger') }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h5>À : {{ demande.destinataire.nomComplet }}</h5>
+                                                <p class="mb-1">
+                                                    {% if demande.annonce %}
+                                                        <strong>Annonce :</strong> {{ demande.annonce.titre }}
+                                                    {% endif %}
+                                                    {% if demande.animal %}
+                                                        <br><strong>Animal :</strong> {{ demande.animal.nom }}
+                                                    {% endif %}
+                                                </p>
+                                                <p class="text-muted mb-2">{{ demande.message|slice(0, 100) }}{% if demande.message|length > 100 %}...{% endif %}</p>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar"></i> {{ demande.dateEnvoi|date('d/m/Y H:i') }}
+                                                </small>
+                                            </div>
+                                            <div>
+                                                {% if demande.statut == 'en_attente' %}
+                                                    <span class="badge badge-info">En attente</span>
+                                                {% elseif demande.statut == 'accepte' %}
+                                                    <span class="badge badge-success">Acceptée</span>
+                                                {% else %}
+                                                    <span class="badge badge-danger">Refusée</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <a href="{{ path('app_demande_show', {'id': demande.id}) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Aucune demande envoyée</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

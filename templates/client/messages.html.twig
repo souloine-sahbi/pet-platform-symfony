@@ -1,0 +1,143 @@
+{% extends 'layout/client.html.twig' %}
+
+{% block title %}Messages - PetNexus{% endblock %}
+
+{% block content %}
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><i class="fas fa-envelope"></i> Messages</h1>
+                </div>
+                <div class="col-sm-6">
+                    <a href="{{ path('app_message_new') }}" class="btn btn-primary float-right">
+                        <i class="fas fa-plus"></i> Nouveau message
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            {% endfor %}
+
+            <div class="row">
+                <!-- Messages Reçus -->
+                <div class="col-lg-6">
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-inbox"></i> Messages Reçus
+                                {% if messagesRecus|length > 0 %}
+                                    <span class="badge badge-light ml-2">{{ messagesRecus|length }}</span>
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if messagesRecus|length > 0 %}
+                                <ul class="mailbox-attachments clearfix" style="list-style: none; padding: 0; margin: 0;">
+                                {% for msg in messagesRecus %}
+                                    <li class="p-3 border-bottom {{ msg.lu ? '' : 'bg-light' }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex">
+                                                <div class="mr-3">
+                                                    <i class="fas fa-user-circle fa-2x text-{{ msg.lu ? 'secondary' : 'primary' }}"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">
+                                                        {{ msg.expediteur.nomComplet }}
+                                                        {% if not msg.lu %}
+                                                            <span class="badge badge-danger">Nouveau</span>
+                                                        {% endif %}
+                                                    </h6>
+                                                    <p class="mb-1 text-muted">{{ msg.contenu|slice(0, 80) }}{% if msg.contenu|length > 80 %}...{% endif %}</p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock"></i> {{ msg.dateEnvoi|date('d/m/Y H:i') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <a href="{{ path('app_message_show', {'id': msg.id}) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Aucun message reçu</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Envoyés -->
+                <div class="col-lg-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-paper-plane"></i> Messages Envoyés
+                                {% if messagesEnvoyes|length > 0 %}
+                                    <span class="badge badge-light ml-2">{{ messagesEnvoyes|length }}</span>
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if messagesEnvoyes|length > 0 %}
+                                <ul class="mailbox-attachments clearfix" style="list-style: none; padding: 0; margin: 0;">
+                                {% for msg in messagesEnvoyes %}
+                                    <li class="p-3 border-bottom">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex">
+                                                <div class="mr-3">
+                                                    <i class="fas fa-user-circle fa-2x text-secondary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">À : {{ msg.destinataire.nomComplet }}</h6>
+                                                    <p class="mb-1 text-muted">{{ msg.contenu|slice(0, 80) }}{% if msg.contenu|length > 80 %}...{% endif %}</p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock"></i> {{ msg.dateEnvoi|date('d/m/Y H:i') }}
+                                                        {% if msg.lu %}
+                                                            <span class="badge badge-success ml-2"><i class="fas fa-check-double"></i> Lu</span>
+                                                        {% endif %}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <a href="{{ path('app_message_show', {'id': msg.id}) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Aucun message envoyé</p>
+                                    <a href="{{ path('app_message_new') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Envoyer un message
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

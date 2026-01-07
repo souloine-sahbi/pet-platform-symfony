@@ -1,30 +1,116 @@
-{% extends 'base.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'layout/admin.html.twig' : 'layout/client.html.twig' %}
 
-{% block title %}Demande{% endblock %}
+{% block title %}Détails de la demande{% endblock %}
 
-{% block body %}
-    <h1>Demande</h1>
+{% block content %}
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><i class="fas fa-info-circle"></i> Détails de la demande #{{ demande.id }}</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ path(is_granted('ROLE_ADMIN') ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path(is_granted('ROLE_ADMIN') ? 'admin_demandes' : 'client_demandes') }}">Demandes</a></li>
+                        <li class="breadcrumb-item active">Détails</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ demande.id }}</td>
-            </tr>
-            <tr>
-                <th>DateEnvoi</th>
-                <td>{{ demande.dateEnvoi ? demande.dateEnvoi|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Statut</th>
-                <td>{{ demande.statut }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-envelope-open-text"></i> Message
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge badge-{{ demande.statut == 'en_attente' ? 'warning' : (demande.statut == 'accepte' ? 'success' : 'danger') }}">
+                                    {{ demande.statut|replace({'_': ' '})|title }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="text-primary">De: {{ demande.demandeur.nomComplet }}</h5>
+                            <small class="text-muted"><i class="fas fa-clock"></i> Envoyé le {{ demande.dateEnvoi|date('d/m/Y à H:i') }}</small>
+                            <hr>
+                            <div class="demande-message p-3 bg-light rounded">
+                                <p class="lead">{{ demande.message|nl2br }}</p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="float-right">
+                                {% if demande.destinataire.id == app.user.id and demande.statut == 'en_attente' %}
+                                    <form method="post" action="{{ path('app_demande_accept', {'id': demande.id}) }}" class="d-inline" onsubmit="return confirm('Accepter cette demande ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ demande.id) }}">
+                                        <button class="btn btn-success">
+                                            <i class="fas fa-check"></i> Accepter
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{{ path('app_demande_refuse', {'id': demande.id}) }}" class="d-inline" onsubmit="return confirm('Refuser cette demande ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ demande.id) }}">
+                                        <button class="btn btn-danger">
+                                            <i class="fas fa-times"></i> Refuser
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                {% if demande.demandeur.id == app.user.id or is_granted('ROLE_ADMIN') %}
+                                     <a href="{{ path('app_demande_edit', {'id': demande.id}) }}" class="btn btn-warning">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <a href="{{ is_granted('ROLE_ADMIN') ? path('admin_demandes') : path('client_demandes') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-    <a href="{{ path('app_demande_index') }}">back to list</a>
+                <div class="col-md-4">
+                    {% if demande.annonce %}
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-bullhorn"></i> Annonce concernée</h3>
+                            </div>
+                            <div class="card-body">
+                                <strong><a href="{{ path('app_annonce_show', {'id': demande.annonce.id}) }}">{{ demande.annonce.titre }}</a></strong>
+                                <p class="text-muted mb-1">{{ demande.annonce.type|capitalize }}</p>
+                                <hr>
+                                {% if demande.annonce.animals|length > 0 %}
+                                    <strong>Animaux:</strong>
+                                    <ul class="list-unstyled">
+                                        {% for animal in demande.annonce.animals %}
+                                            <li><i class="fas fa-paw"></i> {{ animal.nom }} ({{ animal.race }})</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
 
-    <a href="{{ path('app_demande_edit', {'id': demande.id}) }}">edit</a>
-
-    {{ include('demande/_delete_form.html.twig') }}
+                    <div class="card card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-user-friends"></i> Participants</h3>
+                        </div>
+                        <div class="card-body">
+                            <strong>Demandeur:</strong>
+                            <p>{{ demande.demandeur.nomComplet }}<br>
+                            <small class="text-muted">{{ demande.demandeur.email }}</small></p>
+                            <hr>
+                            <strong>Destinataire:</strong>
+                            <p>{{ demande.destinataire.nomComplet }}<br>
+                            <small class="text-muted">{{ demande.destinataire.email }}</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}

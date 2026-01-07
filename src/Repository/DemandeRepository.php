@@ -68,4 +68,33 @@ class DemandeRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    /**
+     * Trouve les utilisateurs avec qui l'utilisateur actuel a eu une demande acceptée
+     * @return Utilisateur[]
+     */
+    public function findUsersWithAcceptedDemande(Utilisateur $user): array
+    {
+        // Récupérer les ID des demandes acceptées où l'utilisateur est demandeur ou destinataire
+        $qb = $this->createQueryBuilder('d')
+            ->where('d.statut = :statut')
+            ->andWhere('d.demandeur = :user OR d.destinataire = :user')
+            ->setParameter('statut', 'acceptee')
+            ->setParameter('user', $user);
+
+        $demandes = $qb->getQuery()->getResult();
+        $usersInteracted = [];
+
+        foreach ($demandes as $demande) {
+            if ($demande->getDemandeur() === $user) {
+                $otherUser = $demande->getDestinataire();
+            } else {
+                $otherUser = $demande->getDemandeur();
+            }
+
+            // Éviter les doublons
+            $usersInteracted[$otherUser->getId()] = $otherUser;
+        }
+
+        return array_values($usersInteracted);
+    }
 }

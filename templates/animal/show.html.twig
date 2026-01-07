@@ -1,87 +1,94 @@
-{% extends 'base.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'layout/admin.html.twig' : 'layout/client.html.twig' %}
 
 {% block title %}{{ animal.nom }}{% endblock %}
 
-{% block body %}
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-8">
-                <h1 class="mb-4">
-                    <i class="fas fa-paw"></i> {{ animal.nom }}
-                </h1>
-
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                {% if animal.photo %}
-                                    <img src="{{ asset('uploads/animaux/' ~ animal.photo) }}"
-                                         class="img-fluid rounded"
-                                         alt="{{ animal.nom }}">
-                                {% else %}
-                                    <div class="bg-light rounded p-5 text-center">
-                                        <i class="fas fa-paw fa-5x text-muted"></i>
-                                        <p class="mt-2 text-muted">Pas de photo</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="col-md-8">
-                                <h3>Informations</h3>
-                                <table class="table">
-                                    <tr>
-                                        <th>Nom :</th>
-                                        <td>{{ animal.nom }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Race :</th>
-                                        <td>{{ animal.race }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Âge :</th>
-                                        <td>{{ animal.age }} an(s)</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Sexe :</th>
-                                        <td>{{ animal.sexe == 'male' ? 'Mâle' : 'Femelle' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Propriétaire :</th>
-                                        <td>{{ animal.proprietaire.nomComplet }}</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-
-                        {% if animal.description %}
-                            <div class="mt-4">
-                                <h3>Description</h3>
-                                <p>{{ animal.description }}</p>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="card-footer">
-                        <a href="{{ path('app_animal_edit', {'id': animal.id}) }}"
-                           class="btn btn-warning">
-                            <i class="fas fa-edit"></i> Modifier
-                        </a>
-
-                        <form method="post" action="{{ path('app_animal_delete', {'id': animal.id}) }}"
-                              class="d-inline"
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet animal ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ animal.id) }}">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </form>
-
-                        <a href="{{ path('app_animal_index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Retour à la liste
-                        </a>
-                    </div>
+{% block content %}
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><i class="fas fa-paw"></i> {{ animal.nom }}</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Accueil</a></li>
+                        <li class="breadcrumb-item active">Détail Animal</li>
+                    </ol>
                 </div>
             </div>
         </div>
     </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <!-- Profile Image -->
+                    <div class="card card-primary card-outline">
+                        <div class="card-body box-profile">
+                            <div class="text-center">
+                                {% if animal.photo %}
+                                    <img class="profile-user-img img-fluid img-circle"
+                                         src="{{ asset('uploads/animaux/' ~ animal.photo) }}"
+                                         alt="Photo de {{ animal.nom }}"
+                                         style="width: 150px; height: 150px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px;">
+                                        <i class="fas fa-paw fa-4x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="profile-username text-center mt-3">{{ animal.nom }}</h3>
+
+                            <p class="text-muted text-center">{{ animal.race }}</p>
+
+                            <ul class="list-group list-group-unbordered mb-3">
+                                <li class="list-group-item">
+                                    <b>Âge</b> <a class="float-right">{{ animal.age }} an(s)</a>
+                                </li>
+                                <li class="list-group-item">
+                                    <b>Sexe</b> <a class="float-right">{{ animal.sexe == 'male' ? 'Mâle' : 'Femelle' }}</a>
+                                </li>
+                                <li class="list-group-item">
+                                    <b>Propriétaire</b> <a class="float-right">{{ animal.proprietaire.nomComplet }}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header p-2">
+                            <ul class="nav nav-pills">
+                                <li class="nav-item"><a class="nav-link active" href="#activity" data-toggle="tab">Description</a></li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <div class="active tab-pane" id="activity">
+                                    <div class="post">
+                                        <p>
+                                            {{ animal.description ?: 'Aucune description disponible.' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="float-right">
+                                <a href="{{ path('app_animal_edit', {'id': animal.id}) }}" class="btn btn-warning">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                {{ include('animal/_delete_form.html.twig') }}
+                            </div>
+                            <a href="{{ is_granted('ROLE_ADMIN') ? path('admin_animaux') : path('client_animaux') }}" class="btn btn-default">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}

@@ -11,8 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\AnnonceRepository; // Correct placement
 
-#[Route('/demande')]
+#[Route('/client/demandes')]
 final class DemandeController extends AbstractController
 {
     #[Route('/', name: 'app_demande_index', methods: ['GET'])]
@@ -29,15 +30,24 @@ final class DemandeController extends AbstractController
         if ($this->isGranted('ROLE_ADMIN')) {
             // Pour les admins, afficher toutes les demandes
             $demandes = $demandeRepository->findAll();
+            return $this->render('demande/index.html.twig', [
+                'demandes' => $demandes,
+                'isAdmin' => true
+            ]);
         } else {
-            // Pour les clients, afficher seulement leurs demandes
-            $demandes = $demandeRepository->findByUser($this->getUser());
-        }
+            // Pour les clients, séparer envoyées et reçues
+            $demandesRecues = $demandeRepository->findReceivedByUser($this->getUser());
+            $demandesEnvoyees = $demandeRepository->findSentByUser($this->getUser());
 
-        return $this->render('demande/index.html.twig', [
-            'demandes' => $demandes,
-        ]);
+            return $this->render('demande/index.html.twig', [
+                'demandesRecues' => $demandesRecues,
+                'demandesEnvoyees' => $demandesEnvoyees,
+                'isAdmin' => false
+            ]);
+        }
     }
+
+    // use statement removed from here
 
     #[Route('/new', name: 'app_demande_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, AnnonceRepository $annonceRepo = null): Response
@@ -76,22 +86,41 @@ final class DemandeController extends AbstractController
 
         // Définir le demandeur
         $demande->setDemandeur($this->getUser());
+        $demande->setDateEnvoi(new \DateTimeImmutable());
+        $demande->setStatut('en_attente');
 
         $form = $this->createForm(DemandeType::class, $demande);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($demande);
+
+            // --- AUTO-MESSAGE START ---
+            // Créer automatiquement un message pour initier la conversation
+            $message = new \App\Entity\Message();
+            $message->setExpediteur($this->getUser());
+            $message->setDestinataire($demande->getDestinataire());
+            $message->setDateEnvoi(new \DateTimeImmutable());
+            $message->setLu(false);
+
+            // Format du message automatique
+            $titreAnnonce = $demande->getAnnonce() ? $demande->getAnnonce()->getTitre() : 'votre annonce';
+            $contenuMessage = "Bonjour,\n\nJe souhaite effectuer une demande concernant l'annonce : \"$titreAnnonce\".\n\nMessage : " . $demande->getMessage();
+
+            $message->setContenu($contenuMessage);
+            $entityManager->persist($message);
+            // --- AUTO-MESSAGE END ---
+
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre demande a été envoyée avec succès !');
+            $this->addFlash('success', 'Votre demande a été envoyée avec succès ! Un message a également été envoyé au propriétaire.');
 
             // Rediriger vers la page de l'annonce
             if ($demande->getAnnonce()) {
                 return $this->redirectToRoute('app_annonce_show', ['id' => $demande->getAnnonce()->getId()]);
             }
 
-            return $this->redirectToRoute('app_demande_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('client_demandes', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('demande/new.html.twig', [
@@ -105,9 +134,11 @@ final class DemandeController extends AbstractController
     public function show(Demande $demande): Response
     {
         // Vérifier les permissions
-        if ($this->getUser()->getRole() !== 'ROLE_ADMIN' &&
-            $demande->getDemandeur()->getId() !== $this->getUser()->getId() &&
-            $demande->getDestinataire()->getId() !== $this->getUser()->getId()) {
+        if (
+            !$this->isGranted('ROLE_ADMIN') &&
+            $demande->getDemandeur() !== $this->getUser() &&
+            $demande->getDestinataire() !== $this->getUser()
+        ) {
             $this->addFlash('error', 'Vous n\'avez pas accès à cette demande.');
             return $this->redirectToRoute('app_demande_index');
         }
@@ -121,8 +152,10 @@ final class DemandeController extends AbstractController
     public function edit(Request $request, Demande $demande, EntityManagerInterface $entityManager): Response
     {
         // Vérifier les permissions (seul le demandeur ou admin peut modifier)
-        if ($this->getUser()->getRole() !== 'ROLE_ADMIN' &&
-            $demande->getDemandeur()->getId() !== $this->getUser()->getId()) {
+        if (
+            !$this->isGranted('ROLE_ADMIN') &&
+            $demande->getDemandeur() !== $this->getUser()
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas modifier cette demande.');
             return $this->redirectToRoute('app_demande_index');
         }
@@ -152,13 +185,15 @@ final class DemandeController extends AbstractController
     public function delete(Request $request, Demande $demande, EntityManagerInterface $entityManager): Response
     {
         // Vérifier les permissions
-        if ($this->getUser()->getRole() !== 'ROLE_ADMIN' &&
-            $demande->getDemandeur()->getId() !== $this->getUser()->getId()) {
+        if (
+            !$this->isGranted('ROLE_ADMIN') &&
+            $demande->getDemandeur() !== $this->getUser()
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer cette demande.');
             return $this->redirectToRoute('app_demande_index');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$demande->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $demande->getId(), $request->request->get('_token'))) {
             // Supprimer d'abord la session associée si elle existe
             if ($demande->getSession()) {
                 $entityManager->remove($demande->getSession());
@@ -177,13 +212,15 @@ final class DemandeController extends AbstractController
     public function accept(Request $request, Demande $demande, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que seul le destinataire peut accepter
-        if ($demande->getDestinataire()->getId() !== $this->getUser()->getId() &&
-            $this->getUser()->getRole() !== 'ROLE_ADMIN') {
+        if (
+            $demande->getDestinataire() !== $this->getUser() &&
+            !$this->isGranted('ROLE_ADMIN')
+        ) {
             $this->addFlash('error', 'Seul le destinataire peut accepter cette demande.');
             return $this->redirectToRoute('app_demande_index');
         }
 
-        if ($this->isCsrfTokenValid('accept'.$demande->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('accept' . $demande->getId(), $request->request->get('_token'))) {
             $demande->setStatut('acceptee');
 
             // Créer automatiquement une session
@@ -192,12 +229,10 @@ final class DemandeController extends AbstractController
             $session->setStatut('en_cours');
             $session->setDescription('Session créée automatiquement suite à l\'acceptation de la demande #' . $demande->getId());
 
-            // Remplir les dates avec celles de l'annonce si disponibles
-            $annonceAnimal = $demande->getAnnonce()->getAnnonceAnimals()->first();
-            if ($annonceAnimal) {
-                $session->setDateDebut($annonceAnimal->getDateDebut());
-                $session->setDateFin($annonceAnimal->getDateFin());
-            }
+            // Remplir les dates
+            $session->setDateDebut(new \DateTimeImmutable());
+            // Date de fin à définir plus tard ou via une logique spécifique si nécessaire
+            // $session->setDateFin(...);
 
             $entityManager->persist($session);
             $entityManager->flush();
@@ -212,13 +247,15 @@ final class DemandeController extends AbstractController
     public function refuse(Request $request, Demande $demande, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que seul le destinataire peut refuser
-        if ($demande->getDestinataire()->getId() !== $this->getUser()->getId() &&
-            $this->getUser()->getRole() !== 'ROLE_ADMIN') {
+        if (
+            $demande->getDestinataire() !== $this->getUser() &&
+            !$this->isGranted('ROLE_ADMIN')
+        ) {
             $this->addFlash('error', 'Seul le destinataire peut refuser cette demande.');
             return $this->redirectToRoute('app_demande_index');
         }
 
-        if ($this->isCsrfTokenValid('refuse'.$demande->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('refuse' . $demande->getId(), $request->request->get('_token'))) {
             $demande->setStatut('refusee');
             $entityManager->flush();
 

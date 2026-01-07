@@ -26,12 +26,12 @@ final class AnimalController extends AbstractController
     #[Route(name: 'app_animal_index', methods: ['GET'])]
     public function index(AnimalRepository $animalRepository): Response
     {
-        // Pour les clients, ne montrer que leurs animaux
+        // Redirection pour les clients vers leur dashboard spécifique
         if ($this->isGranted('ROLE_CLIENT')) {
-            $animals = $animalRepository->findBy(['proprietaire' => $this->getUser()]);
-        } else {
-            $animals = $animalRepository->findAll();
+            return $this->redirectToRoute('client_animaux');
         }
+
+        $animals = $animalRepository->findAll();
 
         return $this->render('animal/index.html.twig', [
             'animals' => $animals,
@@ -56,16 +56,16 @@ final class AnimalController extends AbstractController
             if ($photoFile) {
                 $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $this->slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
 
                 try {
                     $photoFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/animaux',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/animaux',
                         $newFilename
                     );
                     $animal->setPhoto($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'upload de la photo : '.$e->getMessage());
+                    $this->addFlash('error', 'Erreur lors de l\'upload de la photo : ' . $e->getMessage());
                 }
             }
 
@@ -86,7 +86,7 @@ final class AnimalController extends AbstractController
     public function show(Animal $animal): Response
     {
         // Vérifier si l'utilisateur a accès à cet animal
-        if ($this->isGranted('ROLE_CLIENT') && $animal->getProprietaire() !== $this->getUser()) {
+        if ($this->isGranted('ROLE_CLIENT') && !$this->isGranted('ROLE_ADMIN') && $animal->getProprietaire() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cet animal.');
         }
 
@@ -114,7 +114,7 @@ final class AnimalController extends AbstractController
                 // Supprimer l'ancienne photo si elle existe
                 $oldPhoto = $animal->getPhoto();
                 if ($oldPhoto) {
-                    $oldPhotoPath = $this->getParameter('kernel.project_dir').'/public/uploads/animaux/'.$oldPhoto;
+                    $oldPhotoPath = $this->getParameter('kernel.project_dir') . '/public/uploads/animaux/' . $oldPhoto;
                     if (file_exists($oldPhotoPath)) {
                         unlink($oldPhotoPath);
                     }
@@ -122,16 +122,16 @@ final class AnimalController extends AbstractController
 
                 $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $this->slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
 
                 try {
                     $photoFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/animaux',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/animaux',
                         $newFilename
                     );
                     $animal->setPhoto($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'upload de la photo : '.$e->getMessage());
+                    $this->addFlash('error', 'Erreur lors de l\'upload de la photo : ' . $e->getMessage());
                 }
             }
 
@@ -155,11 +155,11 @@ final class AnimalController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cet animal.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$animal->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $animal->getId(), $request->request->get('_token'))) {
             // Supprimer la photo si elle existe
             $photo = $animal->getPhoto();
             if ($photo) {
-                $photoPath = $this->getParameter('kernel.project_dir').'/public/uploads/animaux/'.$photo;
+                $photoPath = $this->getParameter('kernel.project_dir') . '/public/uploads/animaux/' . $photo;
                 if (file_exists($photoPath)) {
                     unlink($photoPath);
                 }

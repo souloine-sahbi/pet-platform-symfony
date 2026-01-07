@@ -46,14 +46,14 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{{ path('app_animal_index') }}" class="nav-link">
                             <h3>{{ mes_animaux ?? 0 }}</h3>
                             <i class="nav-icon fas fa-paw"></i>
                             <p>Mes Animaux</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{{ path('app_annonce_index') }}" class="nav-link">
                             <h3>{{ mes_annonces ?? 0 }}</h3>
                             <i class="nav-icon fas fa-bullhorn"></i>
                             <p>Mes Annonces</p>
@@ -61,7 +61,7 @@
                     </li>
                     <!-- NOUVEAU : Section Demandes -->
                     <li class="nav-item">
-                        <a href="{{ path('client_demandes') }}" class="nav-link">
+                        <a href="{{ path('app_demande_index') }}" class="nav-link">
                             <h3>{{ demandes_recues_count ?? 0 }}</h3>
                             <i class="nav-icon fas fa-clipboard-list"></i>
                             <p>Mes Demandes</p>
@@ -117,26 +117,26 @@
                     <div class="col-lg-3 col-6">
                         <div class="small-box bg-info">
                             <div class="inner">
-                                <h3>0</h3>
+                                <h3>{{ stats.mes_animaux ?? 0 }}</h3>
                                 <p>Mes Animaux</p>
                             </div>
                             <div class="icon">
                                 <i class="fas fa-paw"></i>
                             </div>
-                            <a href="#" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                            <a href="{{ path('client_animaux') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
 
                     <div class="col-lg-3 col-6">
                         <div class="small-box bg-success">
                             <div class="inner">
-                                <h3>0</h3>
+                                <h3>{{ stats.mes_annonces ?? 0 }}</h3>
                                 <p>Mes Annonces</p>
                             </div>
                             <div class="icon">
                                 <i class="fas fa-bullhorn"></i>
                             </div>
-                            <a href="#" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
+                            <a href="{{ path('client_annonces') }}" class="small-box-footer">Plus d'info <i class="fas fa-arrow-circle-right"></i></a>
                         </div>
                     </div>
 
@@ -211,13 +211,13 @@
                             </div>
                             <div class="card-body">
                                 <div class="d-grid gap-2">
-                                    <a href="#" class="btn btn-primary btn-block mb-2">
+                                    <a href="{{ path('app_animal_new') }}" class="btn btn-primary btn-block mb-2">
                                         <i class="fas fa-plus-circle"></i> Ajouter un animal
                                     </a>
-                                    <a href="#" class="btn btn-success btn-block mb-2">
+                                    <a href="{{ path('app_annonce_new') }}" class="btn btn-success btn-block mb-2">
                                         <i class="fas fa-bullhorn"></i> Créer une annonce
                                     </a>
-                                    <a href="#" class="btn btn-info btn-block mb-2">
+                                    <a href="{{ path('client_annonces') }}" class="btn btn-info btn-block mb-2">
                                         <i class="fas fa-search"></i> Parcourir les annonces
                                     </a>
                                     <!-- NOUVEAU : Action pour les demandes -->

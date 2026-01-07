@@ -46,28 +46,3 @@ app_demande_refuse:
     path: /demande/{id}/refuse
     controller: App\Controller\DemandeController::refuse
     methods: POST
-# Routes Client
-client_dashboard:
-    path: /client/dashboard
-    controller: App\Controller\ClientController::dashboard
-
-client_demandes:
-    path: /client/demandes
-    controller: App\Controller\ClientController::demandes
-
-client_messages:
-    path: /client/messages
-    controller: App\Controller\ClientController::messages
-
-# Routes Admin
-admin_dashboard:
-    path: /admin/dashboard
-    controller: App\Controller\AdminController::dashboard
-
-admin_demandes:
-    path: /admin/demandes
-    controller: App\Controller\AdminController::demandes
-
-admin_messages:
-    path: /admin/messages
-    controller: App\Controller\AdminController::messages

@@ -1,45 +1,40 @@
-{% extends app.user ? (app.user.roles[0] == 'ROLE_ADMIN' ? 'admin.html.twig' : 'client.html.twig') : 'base.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'layout/admin.html.twig' : 'layout/client.html.twig' %}
 
 {% block title %}Messagerie - PetNexus{% endblock %}
 
-{% block body %}
-    <div class="content-wrapper">
-        <div class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1 class="m-0">Messagerie</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="{{ path(app.user.roles[0] == 'ROLE_ADMIN' ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
-                            <li class="breadcrumb-item active">Messages</li>
-                        </ol>
-                    </div>
+{% block content %}
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><i class="fas fa-envelope"></i> Messagerie</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ path(is_granted('ROLE_ADMIN') ? 'admin_dashboard' : 'client_dashboard') }}">Accueil</a></li>
+                        <li class="breadcrumb-item active">Messages</li>
+                    </ol>
                 </div>
             </div>
         </div>
+    </div>
 
-        <section class="content">
-            <div class="container-fluid">
+    <section class="content">
+        <div class="container-fluid">
+            {% if isAdmin %}
                 <div class="row">
-                    <!-- Liste des conversations -->
+                    <!-- Liste des conversations (Admin) -->
                     <div class="col-md-4">
-                        <div class="card">
+                        <div class="card card-primary card-outline">
                             <div class="card-header">
                                 <h3 class="card-title">
                                     <i class="fas fa-users"></i>
                                     Conversations
                                 </h3>
-                                <div class="card-tools">
-                                    <a href="{{ path('app_message_new') }}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Nouveau
-                                    </a>
-                                </div>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover">
+                                    <table class="table table-hover table-striped">
                                         <tbody>
                                         {% set conversations = [] %}
                                         {% for message in messages %}
@@ -58,33 +53,40 @@
                                         {% for conversation in conversations|sort((a, b) => b.lastMessage.dateEnvoi <=> a.lastMessage.dateEnvoi) %}
                                             <tr onclick="window.location='{{ path('app_message_conversation', {'userId': conversation.user.id}) }}'"
                                                 style="cursor: pointer;"
-                                                class="{{ conversation.unread ? 'table-info' : '' }}">
-                                                <td>
+                                                class="{{ conversation.unread ? 'table-primary font-weight-bold' : '' }}">
+                                                <td class="p-2">
                                                     <div class="d-flex align-items-center">
                                                         <div class="mr-3">
-                                                            <i class="fas fa-user-circle fa-2x"></i>
+                                                           {% if conversation.user.photoProfil %}
+                                                                <img src="{{ asset('uploads/photos/' ~ conversation.user.photoProfil) }}" class="img-circle elevation-1" alt="User Image" style="width: 40px; height: 40px; object-fit: cover;">
+                                                            {% else %}
+                                                                 <i class="fas fa-user-circle fa-2x text-muted" style="font-size: 40px;"></i>
+                                                            {% endif %}
                                                         </div>
-                                                        <div>
-                                                            <strong>{{ conversation.user.prenom }} {{ conversation.user.nom }}</strong>
-                                                            <br>
-                                                            <small class="text-muted">
+                                                        <div class="flex-grow-1 overflow-hidden">
+                                                            <div class="d-flex justify-content-between">
+                                                                 <strong>{{ conversation.user.nomComplet }}</strong>
+                                                                 {% if conversation.unread %}
+                                                                    <span class="badge badge-danger ml-auto">New</span>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="text-muted text-truncate" style="font-size: 0.9em;">
+                                                                {% if conversation.lastMessage.expediteur.id == app.user.id %}
+                                                                    <i class="fas fa-reply small mr-1"></i>
+                                                                {% endif %}
                                                                 {{ conversation.lastMessage.contenu|slice(0, 30) }}...
-                                                            </small>
-                                                            <br>
-                                                            <small class="text-muted">
-                                                                {{ conversation.lastMessage.dateEnvoi|date('d/m/Y H:i') }}
+                                                            </div>
+                                                            <small class="text-muted float-right" style="font-size: 0.75em;">
+                                                                {{ conversation.lastMessage.dateEnvoi|date('d/m H:i') }}
                                                             </small>
                                                         </div>
-                                                        {% if conversation.unread %}
-                                                            <span class="badge badge-primary ml-auto">Nouveau</span>
-                                                        {% endif %}
                                                     </div>
                                                 </td>
                                             </tr>
                                         {% else %}
                                             <tr>
-                                                <td class="text-center text-muted py-4">
-                                                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                                <td class="text-center text-muted py-5">
+                                                    <i class="fas fa-comments fa-3x mb-3 text-gray-300"></i><br>
                                                     Aucune conversation
                                                 </td>
                                             </tr>
@@ -96,169 +98,124 @@
                         </div>
                     </div>
 
-                    <!-- Liste des messages -->
+                    <!-- Placeholder -->
                     <div class="col-md-8">
                         <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">
-                                    <i class="fas fa-envelope"></i>
-                                    Tous les messages
-                                </h3>
-                                <div class="card-tools">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-default btn-sm" id="filterReceived">
-                                            <i class="fas fa-inbox"></i> Reçus
-                                        </button>
-                                        <button type="button" class="btn btn-default btn-sm" id="filterSent">
-                                            <i class="fas fa-paper-plane"></i> Envoyés
-                                        </button>
-                                        <button type="button" class="btn btn-default btn-sm" id="filterAll">
-                                            <i class="fas fa-list"></i> Tous
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                        <tr>
-                                            <th>De/À</th>
-                                            <th>Message</th>
-                                            <th>Date</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {% for message in messages %}
-                                            <tr data-type="{{ message.expediteur.id == app.user.id ? 'sent' : 'received' }}"
-                                                class="{{ message.expediteur.id == app.user.id ? 'table-light' : '' }}">
-                                                <td>
-                                                    {% if message.expediteur.id == app.user.id %}
-                                                        <i class="fas fa-paper-plane text-primary"></i>
-                                                        <strong>À:</strong> {{ message.destinataire.prenom }} {{ message.destinataire.nom }}
-                                                    {% else %}
-                                                        <i class="fas fa-inbox text-success"></i>
-                                                        <strong>De:</strong> {{ message.expediteur.prenom }} {{ message.expediteur.nom }}
-                                                        {% if not message.lu or message.lu == false %}
-                                                            <span class="badge badge-success ml-2">Nouveau</span>
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
-                                                        {{ message.contenu|slice(0, 50) }}...
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <small class="text-muted">
-                                                        {{ message.dateEnvoi|date('d/m/Y H:i') }}
-                                                    </small>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <a href="{{ path('app_message_show', {'id': message.id}) }}"
-                                                           class="btn btn-info" title="Voir">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
-
-                                                        {% if message.expediteur.id == app.user.id or 'ROLE_ADMIN' in app.user.roles %}
-                                                            <a href="{{ path('app_message_edit', {'id': message.id}) }}"
-                                                               class="btn btn-warning" title="Modifier">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                        {% endif %}
-
-                                                        {% if message.expediteur.id == app.user.id or 'ROLE_ADMIN' in app.user.roles %}
-                                                            <form method="post"
-                                                                  action="{{ path('app_message_delete', {'id': message.id}) }}"
-                                                                  class="d-inline"
-                                                                  onsubmit="return confirm('Supprimer ce message ?')">
-                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ message.id) }}">
-                                                                <button class="btn btn-danger" title="Supprimer">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </button>
-                                                            </form>
-                                                        {% endif %}
-
-                                                        {% if message.destinataire.id == app.user.id and (not message.lu or message.lu == false) %}
-                                                            <form method="post"
-                                                                  action="{{ path('app_message_mark_read', {'id': message.id}) }}"
-                                                                  class="d-inline">
-                                                                <input type="hidden" name="_token" value="{{ csrf_token('read' ~ message.id) }}">
-                                                                <button class="btn btn-success" title="Marquer comme lu">
-                                                                    <i class="fas fa-check"></i>
-                                                                </button>
-                                                            </form>
-                                                        {% endif %}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        {% else %}
-                                            <tr>
-                                                <td colspan="4" class="text-center text-muted py-4">
-                                                    <i class="fas fa-comments fa-2x mb-2"></i><br>
-                                                    Aucun message
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div class="card-footer">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                    <span class="text-muted">
-                                        Total: {{ messages|length }} message(s)
-                                    </span>
-                                    </div>
-                                    <div class="col-md-6 text-right">
-                                        <a href="{{ path('app_message_new') }}" class="btn btn-primary">
-                                            <i class="fas fa-paper-plane"></i> Nouveau message
-                                        </a>
-                                    </div>
-                                </div>
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-envelope-open-text fa-4x text-light mb-3"></i>
+                                <h3>Messages Admin</h3>
+                                <p class="text-muted">Sélectionnez une conversation à gauche.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-    </div>
-{% endblock %}
+            {% else %}
+                {# Layout Client #}
+                <div class="row">
+                    <!-- Messages Reçus -->
+                    <div class="col-lg-6">
+                        <div class="card card-danger">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-inbox"></i> Messages Reçus
+                                    {% if messagesRecus|length > 0 %}
+                                        <span class="badge badge-light ml-2">{{ messagesRecus|length }}</span>
+                                    {% endif %}
+                                </h3>
+                            </div>
+                            <div class="card-body p-0">
+                                {% if messagesRecus|length > 0 %}
+                                    <ul class="mailbox-attachments clearfix" style="list-style: none; padding: 0; margin: 0;">
+                                    {% for msg in messagesRecus %}
+                                        <li class="p-3 border-bottom {{ msg.lu ? '' : 'bg-light' }}">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="d-flex">
+                                                    <div class="mr-3">
+                                                        <i class="fas fa-user-circle fa-2x text-{{ msg.lu ? 'secondary' : 'primary' }}"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-1">
+                                                            {{ msg.expediteur.nomComplet }}
+                                                            {% if not msg.lu %}
+                                                                <span class="badge badge-danger">Nouveau</span>
+                                                            {% endif %}
+                                                        </h6>
+                                                        <p class="mb-1 text-muted">{{ msg.contenu|slice(0, 80) }}{% if msg.contenu|length > 80 %}...{% endif %}</p>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock"></i> {{ msg.dateEnvoi|date('d/m/Y H:i') }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <a href="{{ path('app_message_show', {'id': msg.id}) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Aucun message reçu</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
 
-{% block javascripts %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Filtres des messages
-            const filterReceived = document.getElementById('filterReceived');
-            const filterSent = document.getElementById('filterSent');
-            const filterAll = document.getElementById('filterAll');
-
-            function filterMessages(type) {
-                document.querySelectorAll('tbody tr').forEach(row => {
-                    if (type === 'all') {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = row.dataset.type === type ? '' : 'none';
-                    }
-                });
-
-                // Mettre à jour les boutons actifs
-                [filterReceived, filterSent, filterAll].forEach(btn => btn.classList.remove('active'));
-                if (type === 'received') filterReceived.classList.add('active');
-                if (type === 'sent') filterSent.classList.add('active');
-                if (type === 'all') filterAll.classList.add('active');
-            }
-
-            filterReceived.addEventListener('click', () => filterMessages('received'));
-            filterSent.addEventListener('click', () => filterMessages('sent'));
-            filterAll.addEventListener('click', () => filterMessages('all'));
-
-            // Initialiser avec tous les messages
-            filterMessages('all');
-        });
-    </script>
+                    <!-- Messages Envoyés -->
+                    <div class="col-lg-6">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-paper-plane"></i> Messages Envoyés
+                                    {% if messagesEnvoyes|length > 0 %}
+                                        <span class="badge badge-light ml-2">{{ messagesEnvoyes|length }}</span>
+                                    {% endif %}
+                                </h3>
+                            </div>
+                            <div class="card-body p-0">
+                                {% if messagesEnvoyes|length > 0 %}
+                                    <ul class="mailbox-attachments clearfix" style="list-style: none; padding: 0; margin: 0;">
+                                    {% for msg in messagesEnvoyes %}
+                                        <li class="p-3 border-bottom">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="d-flex">
+                                                    <div class="mr-3">
+                                                        <i class="fas fa-user-circle fa-2x text-secondary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-1">À : {{ msg.destinataire.nomComplet }}</h6>
+                                                        <p class="mb-1 text-muted">{{ msg.contenu|slice(0, 80) }}{% if msg.contenu|length > 80 %}...{% endif %}</p>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock"></i> {{ msg.dateEnvoi|date('d/m/Y H:i') }}
+                                                            {% if msg.lu %}
+                                                                <span class="badge badge-success ml-2"><i class="fas fa-check-double"></i> Lu</span>
+                                                            {% endif %}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <a href="{{ path('app_message_show', {'id': msg.id}) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Aucun message envoyé</p>
+                                        <a href="{{ path('app_message_new') }}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Envoyer un message
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
 {% endblock %}

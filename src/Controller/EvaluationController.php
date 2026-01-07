@@ -14,25 +14,56 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/evaluation')]
+#[Route('/client/evaluation')]
 #[IsGranted('ROLE_CLIENT')]
 class EvaluationController extends AbstractController
 {
     #[Route('/', name: 'evaluation_index', methods: ['GET'])]
-    public function index(EvaluationRepository $evaluationRepository): Response
-    {
+    public function index(
+        EvaluationRepository $evaluationRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
         $user = $this->getUser();
 
         // Évaluations reçues par l'utilisateur connecté
-        $evaluationsRecues = $evaluationRepository->findByEvalue($user);
+        $evaluations = [];
+        $moyenne = 0;
+        $usersToEvaluate = [];
 
-        // Moyenne des notes
-        $moyenneNotes = $evaluationRepository->getAverageNoteForUser($user);
+        if ($user instanceof \App\Entity\Client || $this->isGranted('ROLE_CLIENT')) {
+            $user = $this->getUser();
+            $evaluations = $evaluationRepository->findByEvalue($user);
+            $moyenne = $evaluationRepository->getAverageNoteForUser($user);
+
+            // Récupérer TOUS les utilisateurs (sauf soi-même et les admins)
+            $allUsers = $entityManager->getRepository(\App\Entity\Utilisateur::class)->findAll();
+            $potentialUsers = [];
+
+            foreach ($allUsers as $u) {
+                // Exclure soi-même et les admins
+                if ($u->getId() !== $user->getId() && !in_array('ROLE_ADMIN', $u->getRoles())) {
+                    $potentialUsers[] = $u;
+                }
+            }
+
+            // Filtrer ceux déjà évalués
+            foreach ($potentialUsers as $potentialUser) {
+                $existingEvaluation = $evaluationRepository->findOneBy([
+                    'evaluateur' => $user,
+                    'evalue' => $potentialUser
+                ]);
+
+                if (!$existingEvaluation) {
+                    $usersToEvaluate[] = $potentialUser;
+                }
+            }
+        }
 
         return $this->render('evaluation/index.html.twig', [
-            'evaluations' => $evaluationsRecues,
-            'moyenne' => $moyenneNotes,
-            'total' => count($evaluationsRecues),
+            'evaluations' => $evaluations,
+            'moyenne' => $moyenne,
+            'total' => count($evaluations),
+            'usersToEvaluate' => $usersToEvaluate,
         ]);
     }
 
@@ -40,7 +71,8 @@ class EvaluationController extends AbstractController
     public function new(
         Client $client,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        \App\Repository\DemandeRepository $demandeRepository // Injection du repository
     ): Response {
         $currentUser = $this->getUser();
 
@@ -50,9 +82,12 @@ class EvaluationController extends AbstractController
             return $this->redirectToRoute('client_dashboard');
         }
 
+
+
         $evaluation = new Evaluation();
         $evaluation->setEvaluateur($currentUser);
         $evaluation->setEvalue($client);
+        $evaluation->setDateEvaluation(new \DateTime());
 
         $form = $this->createForm(EvaluationType::class, $evaluation);
         $form->handleRequest($request);
@@ -68,7 +103,7 @@ class EvaluationController extends AbstractController
 
         return $this->render('evaluation/new.html.twig', [
             'evaluation' => $evaluation,
-            'form' => $form,
+            'form' => $form->createView(),
             'client' => $client,
         ]);
     }
@@ -124,7 +159,7 @@ class EvaluationController extends AbstractController
             return $this->redirectToRoute('evaluation_index');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$evaluation->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $evaluation->getId(), $request->request->get('_token'))) {
             $entityManager->remove($evaluation);
             $entityManager->flush();
 

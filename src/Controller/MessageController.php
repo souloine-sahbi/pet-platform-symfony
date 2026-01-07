@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/message')]
+#[Route('/client/messages')]
 final class MessageController extends AbstractController
 {
     #[Route('/', name: 'app_message_index', methods: ['GET'])]
@@ -24,14 +24,21 @@ final class MessageController extends AbstractController
         }
 
         // Filtrer les messages selon l'utilisateur
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $messages = $messageRepository->findAll();
-        } else {
-            $messages = $messageRepository->findByUser($this->getUser());
-        }
+        // Filtrer les messages pour tout le monde (y compris les admins)
+        $messagesRecus = $messageRepository->findBy(['destinataire' => $this->getUser()], ['dateEnvoi' => 'DESC']);
+        $messagesEnvoyes = $messageRepository->findBy(['expediteur' => $this->getUser()], ['dateEnvoi' => 'DESC']);
+
+        // Fusionner et trier pour la vue "Conversation" des admins
+        $messages = array_merge($messagesRecus, $messagesEnvoyes);
+        usort($messages, function ($a, $b) {
+            return $b->getDateEnvoi() <=> $a->getDateEnvoi();
+        });
 
         return $this->render('message/index.html.twig', [
-            'messages' => $messages,
+            'messagesRecus' => $messagesRecus,
+            'messagesEnvoyes' => $messagesEnvoyes,
+            'messages' => $messages, // Nécessaire pour le layout Admin
+            'isAdmin' => $this->isGranted('ROLE_ADMIN')
         ]);
     }
 
@@ -129,7 +136,7 @@ final class MessageController extends AbstractController
             return $this->redirectToRoute('app_message_index');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$message->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $message->getId(), $request->request->get('_token'))) {
             $entityManager->remove($message);
             $entityManager->flush();
 
@@ -139,15 +146,13 @@ final class MessageController extends AbstractController
         return $this->redirectToRoute('app_message_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/conversation/{userId}', name: 'app_message_conversation', methods: ['GET'])]
-    public function conversation(int $userId, MessageRepository $messageRepository): Response
+    #[Route('/conversation/{userId}', name: 'app_message_conversation', methods: ['GET', 'POST'])]
+    public function conversation(int $userId, Request $request, MessageRepository $messageRepository, EntityManagerInterface $entityManager): Response
     {
         if (!$this->getUser()) {
             return $this->redirectToRoute('app_login');
         }
 
-        // Récupérer la conversation entre les deux utilisateurs
-        $conversation = $messageRepository->findConversation($this->getUser()->getId(), $userId);
         $otherUser = $entityManager->getRepository(\App\Entity\Utilisateur::class)->find($userId);
 
         if (!$otherUser) {
@@ -155,9 +160,39 @@ final class MessageController extends AbstractController
             return $this->redirectToRoute('app_message_index');
         }
 
+        // Handle Reply Form
+        $newMessage = new Message();
+        $newMessage->setExpediteur($this->getUser());
+        $newMessage->setDestinataire($otherUser);
+
+        $form = $this->createForm(MessageType::class, $newMessage, [
+            'user' => $this->getUser()
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($newMessage);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_message_conversation', ['userId' => $userId]);
+        }
+
+        // Récupérer la conversation entre les deux utilisateurs
+        $conversation = $messageRepository->findConversation($this->getUser()->getId(), $userId);
+
+        // Marquer les messages reçus comme lus
+        foreach ($conversation as $msg) {
+            if ($msg->getDestinataire()->getId() === $this->getUser()->getId() && !$msg->isLu()) {
+                $msg->setLu(true);
+            }
+        }
+        $entityManager->flush();
+
         return $this->render('message/conversation.html.twig', [
             'conversation' => $conversation,
             'otherUser' => $otherUser,
+            'form' => $form->createView(),
         ]);
     }
 

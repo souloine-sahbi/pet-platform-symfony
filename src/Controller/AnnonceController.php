@@ -20,13 +20,13 @@ final class AnnonceController extends AbstractController
     #[Route(name: 'app_annonce_index', methods: ['GET'])]
     public function index(AnnonceRepository $annonceRepository): Response
     {
-        // Pour les clients, ne montrer que leurs annonces
+        // Redirection pour les clients vers leur dashboard spécifique
         if ($this->isGranted('ROLE_CLIENT')) {
-            $annonces = $annonceRepository->findBy(['auteur' => $this->getUser()], ['datePublication' => 'DESC']);
-        } else {
-            // Pour les admins, toutes les annonces
-            $annonces = $annonceRepository->findBy([], ['datePublication' => 'DESC']);
+            return $this->redirectToRoute('client_annonces');
         }
+
+        // Pour les admins, toutes les annonces
+        $annonces = $annonceRepository->findBy([], ['datePublication' => 'DESC']);
 
         return $this->render('annonce/index.html.twig', [
             'annonces' => $annonces,
@@ -65,7 +65,7 @@ final class AnnonceController extends AbstractController
     public function show(Annonce $annonce): Response
     {
         // Vérifier les autorisations
-        if ($this->isGranted('ROLE_CLIENT') && $annonce->getAuteur() !== $this->getUser()) {
+        if ($this->isGranted('ROLE_CLIENT') && !$this->isGranted('ROLE_ADMIN') && $annonce->getAuteur() !== $this->getUser()) {
             // Les clients ne peuvent voir que leurs propres annonces
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette annonce.');
         }
@@ -110,7 +110,7 @@ final class AnnonceController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cette annonce.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$annonce->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $annonce->getId(), $request->request->get('_token'))) {
             $entityManager->remove($annonce);
             $entityManager->flush();
 

@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-<<<<<<< HEAD
-      <module fileurl="file://$PROJECT_DIR$/.idea/Pet_App.iml" filepath="$PROJECT_DIR$/.idea/Pet_App.iml" />
-=======
-      <module fileurl="file://$PROJECT_DIR$/.idea/pet_platform.iml" filepath="$PROJECT_DIR$/.idea/pet_platform.iml" />
->>>>>>> origin/etudiant3-demandes-sessions
+      <module fileurl="file://$PROJECT_DIR$/.idea/pet-platform-symfony.iml" filepath="$PROJECT_DIR$/.idea/pet-platform-symfony.iml" />
     </modules>
   </component>
 </project>

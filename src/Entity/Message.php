@@ -28,6 +28,10 @@ class Message
     #[ORM\JoinColumn(nullable: false)]
     private ?Utilisateur $destinataire = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $lu = false;
+
+
     public function __construct()
     {
         $this->dateEnvoi = new \DateTimeImmutable();
@@ -81,4 +85,16 @@ class Message
         $this->destinataire = $destinataire;
         return $this;
     }
+
+    public function isLu(): bool
+    {
+        return $this->lu;
+    }
+
+    public function setLu(bool $lu): self
+    {
+        $this->lu = $lu;
+        return $this;
+    }
+
 }

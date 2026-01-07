@@ -1,13 +1,46 @@
-{% extends 'base.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'layout/admin.html.twig' : 'layout/client.html.twig' %}
 
-{% block title %}Edit Annonce{% endblock %}
+{% block title %}Modifier Annonce{% endblock %}
 
-{% block body %}
-    <h1>Edit Annonce</h1>
+{% block content %}
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><i class="fas fa-edit"></i> Modifier Annonce</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Accueil</a></li>
+                        <li class="breadcrumb-item active">Modifier Annonce</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    {{ include('annonce/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('app_annonce_index') }}">back to list</a>
-
-    {{ include('annonce/_delete_form.html.twig') }}
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">Modification de l'annonce</h3>
+                        </div>
+                        <div class="card-body">
+                            {{ include('annonce/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ path('app_annonce_index') }}" class="btn btn-default">
+                                <i class="fas fa-arrow-left"></i> Retour à la liste
+                            </a>
+                            <div class="float-right">
+                                {{ include('annonce/_delete_form.html.twig') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}

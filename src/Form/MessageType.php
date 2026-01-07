@@ -35,7 +35,7 @@ class MessageType extends AbstractType
                     return $er->createQueryBuilder('u')
                         ->orderBy('u.nom', 'ASC');
                 },
-                'choice_label' => function(Utilisateur $user) {
+                'choice_label' => function (Utilisateur $user) {
                     return $user->getNom() . ' ' . $user->getPrenom() . ' (' . $user->getEmail() . ')';
                 },
                 'label' => 'Expéditeur',
@@ -53,14 +53,14 @@ class MessageType extends AbstractType
                         ->setParameter('user', $user ? $user->getId() : 0)
                         ->orderBy('u.nom', 'ASC');
 
-                    // Pour les non-admins, seulement les autres clients
+                    // Pour les non-admins, permettre de contacter les autres clients ET les admins
                     if ($user && !in_array('ROLE_ADMIN', $user->getRoles())) {
-                        $qb->andWhere('u INSTANCE OF App\Entity\Client');
+                        $qb->andWhere('u INSTANCE OF App\Entity\Client OR u INSTANCE OF App\Entity\Admin');
                     }
 
                     return $qb;
                 },
-                'choice_label' => function(Utilisateur $user) {
+                'choice_label' => function (Utilisateur $user) {
                     return $user->getNom() . ' ' . $user->getPrenom() . ' (' . $user->getEmail() . ')';
                 },
                 'label' => 'Destinataire',

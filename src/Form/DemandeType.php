@@ -2,11 +2,15 @@
 
 namespace App\Form;
 
+use App\Entity\Annonce; // ADDED
 use App\Entity\Demande;
+use Doctrine\ORM\EntityRepository; // ADDED
+use Symfony\Bridge\Doctrine\Form\Type\EntityType; // ADDED
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType; // ADDED
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 class DemandeType extends AbstractType
 {
@@ -38,7 +42,7 @@ class DemandeType extends AbstractType
             $builder->add('annonce', EntityType::class, [
                 'class' => Annonce::class,
                 'label' => 'Annonce concernée',
-                'choice_label' => function(Annonce $annonce) {
+                'choice_label' => function (Annonce $annonce) {
                     return $annonce->getTitre() . ' (' . $annonce->getType() . ')';
                 },
                 'query_builder' => function (EntityRepository $er) {

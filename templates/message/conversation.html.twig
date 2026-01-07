@@ -1,0 +1,88 @@
+{% extends is_granted('ROLE_ADMIN') ? 'layout/admin.html.twig' : 'layout/client.html.twig' %}
+
+{% block title %}Conversation avec {{ otherUser.nomComplet }}{% endblock %}
+
+{% block content %}
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <a href="{{ path(is_granted('ROLE_ADMIN') ? 'admin_messages' : 'client_messages') }}" class="btn btn-outline-secondary mr-2">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        Conversation avec {{ otherUser.nomComplet }}
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="card card-primary card-outline direct-chat direct-chat-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Messages</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <!-- Conversations are loaded here -->
+                    <div class="direct-chat-messages" style="height: 400px;">
+                        {% for msg in conversation %}
+                            {% set isMe = msg.expediteur.id == app.user.id %}
+                            
+                            <!-- Message. Default to the left -->
+                            <div class="direct-chat-msg {{ isMe ? 'right' : '' }}">
+                                <div class="direct-chat-infos clearfix">
+                                    <span class="direct-chat-name float-{{ isMe ? 'right' : 'left' }}">{{ isMe ? 'Moi' : msg.expediteur.nomComplet }}</span>
+                                    <span class="direct-chat-timestamp float-{{ isMe ? 'left' : 'right' }}">{{ msg.dateEnvoi|date('d M H:i') }}</span>
+                                </div>
+                                <!-- /.direct-chat-infos -->
+                                {% if msg.expediteur.photoProfil %}
+                                    <img class="direct-chat-img" src="{{ asset('uploads/photos/' ~ msg.expediteur.photoProfil) }}" alt="Message User Image">
+                                {% else %}
+                                    <img class="direct-chat-img" src="{{ asset('adminlte/dist/img/avatar.png') }}" alt="Message User Image">
+                                {% endif %}
+                                <!-- /.direct-chat-img -->
+                                <div class="direct-chat-text">
+                                    {{ msg.contenu|nl2br }}
+                                </div>
+                                <!-- /.direct-chat-text -->
+                            </div>
+                            <!-- /.direct-chat-msg -->
+                        {% else %}
+                            <div class="text-center text-muted my-5">
+                                <p>Aucun message pour le moment.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <!--/.direct-chat-messages-->
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer">
+                    {{ form_start(form) }}
+                        <div class="input-group">
+                            {{ form_widget(form.contenu, {'attr': {'placeholder': 'Tapez votre message...', 'class': 'form-control', 'rows': 1}}) }}
+                            <span class="input-group-append">
+                                <button type="submit" class="btn btn-primary">Envoyer</button>
+                            </span>
+                        </div>
+                        <div class="d-none">
+                            {{ form_rest(form) }}
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+                <!-- /.card-footer-->
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var messageBody = document.querySelector('.direct-chat-messages');
+            messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+        });
+    </script>
+{% endblock %}
